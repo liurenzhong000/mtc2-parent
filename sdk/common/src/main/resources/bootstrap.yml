@@ -1,0 +1,56 @@
+spring:
+  profiles:
+    active: dev
+  cloud:
+    config:
+      profile: {spring.profiles.active}
+      discovery:
+        enabled: true
+        service-id: server-config
+eureka:
+  client:
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-expiration-duration-in-seconds: 15
+    lease-renewal-interval-in-seconds: 5
+    prefer-ip-address: true
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 60000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+#  endpoint:
+#    health:
+#      show-details: always
+
+---
+spring:
+  profiles: dev
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+---
+spring:
+  profiles: test
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+---
+spring:
+  profiles: prod
+eureka:
+  client:
+    service-url:
+      defaultZone: http://172.21.232.205:8761/eureka/,http://172.21.232.206:8761/eureka/

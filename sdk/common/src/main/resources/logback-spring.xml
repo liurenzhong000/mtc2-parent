@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+
+    <appender name="consoleInfoLog" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </pattern>
+        </layout>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+             <level>info</level>
+        </filter>
+    </appender>
+
+    <springProfile name="prod, test">
+        <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- 只要 Info 级别的日志 -->
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>info</level>
+            </filter>
+            <File>logs/info.log</File>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>logs/info.%d{yyyy-MM-dd}.log</FileNamePattern>
+                <!--只保留最近30天的日志-->
+                <maxHistory>30</maxHistory>
+                <!--用来指定日志文件的上限大小-->
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <charset>UTF-8</charset>
+                <pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <appender name="fileErrorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- 只要 Error 级别的日志 -->
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>Error</level>
+            </filter>
+            <File>logs/error.log</File>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <FileNamePattern>logs/error.%d{yyyy-MM-dd}.log</FileNamePattern>
+                <maxHistory>30</maxHistory>
+                <!--<totalSizeCap>1GB</totalSizeCap>-->
+            </rollingPolicy>
+            <encoder>
+                <charset>UTF-8</charset>
+                <pattern>%d [%thread] %-5level %logger{36} %line - %msg%n</pattern>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <root level="info">
+        <appender-ref ref="consoleInfoLog" />
+        <springProfile name="prod, test">
+            <appender-ref ref="fileInfoLog" />
+            <appender-ref ref="fileErrorLog" />
+        </springProfile>
+    </root>
+
+</configuration>
