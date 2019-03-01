@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 钱包地址:
+                            <input type="text" name="walletAddress" class="form-control"/>
+                        </label>
+                        <!--<label class="form-group m-l-lg m-t-sm m-b-sm"> 区块号:-->
+                            <!--<input type="text" name="blockNum" class="form-control"/>-->
+                        <!--</label>-->
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 合约地址:
+                            <input type="text" name="contractAddress" placeholder="以太坊用'0'" p class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 交易Hash:
+                            <input type="text" name="txHash" class="form-control"/>
+                        </label>
+                        <!--<label class="form-group m-l-lg m-t-sm m-b-sm"> 爬取创建:-->
+                            <!--<select name="isMadeBySchedule" class="form-control">-->
+                                <!--<option value="">不限</option>-->
+                                <!--<option value="true">是</option>-->
+                                <!--<option value="false">否</option>-->
+                            <!--</select>-->
+                        <!--</label>-->
+                        <!--<label class="form-group m-l-lg m-t-sm m-b-sm"> 平台用户:-->
+                            <!--<select name="isPlatformUser" class="form-control">-->
+                                <!--<option value="">不限</option>-->
+                                <!--<option value="true">是</option>-->
+                                <!--<option value="false">否</option>-->
+                            <!--</select>-->
+                        <!--</label>-->
+                        <!--<label class="form-group m-l-lg m-t-sm m-b-sm"> 状态:-->
+                            <!--<select name="status" class="form-control">-->
+                                <!--<option value="">不限</option>-->
+                                <!--<option value="0">未确认</option>-->
+                                <!--<option value="1">成功</option>-->
+                                <!--<option value="2">失败</option>-->
+                            <!--</select>-->
+                        <!--</label>-->
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>
+
+                            <a href="javascript:" v-if="permission.del" @click="reloadTransaction" class="btn btn-danger btn-outline btn-sm m-l-n-xxs pull-right"><i class="fa fa-recycle"></i> 重置扫描</a>
+                            <a href="javascript:" v-if="permission.del" @click="updateLimit" class="btn btn-warning btn-outline btn-sm m-l-n-xxs pull-right m-r-sm"><i class="fa fa-chain-broken"></i> 清理下限</a>
+                            <!--<a href="javascript:" v-if="permission.del" @click="clearBalanceCache" class="btn btn-primary btn-outline btn-sm m-l-n-xxs pull-right m-r-sm"><i class="fa fa-btc"></i> 清理余额缓存</a>-->
+                            <a href="javascript:" v-if="permission.del" @click="clearAllBalanceCache" class="btn btn-primary btn-outline btn-sm m-l-n-xxs pull-right m-r-sm"><i class="fa fa-btc"></i> 清理所有余额缓存</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.hash" :class="{success : (item.status === 1), danger : (item.status === 2)}" >
+                        <td :title="item.hash" v-html="toUrl(item.hash)"></td>
+                        <td>{{ item.blockNumber }}</td>
+                        <td>{{ item.times | formatter }}</td>
+                        <td>{{ item.createTime | formatter }}</td>
+                        <td :title="item.from">
+                            {{ item.from | limitLength }}
+                            <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.from" ><i class="fa fa-copy"></i></button>
+                        </td>
+                        <td :title="item.contractAddress">
+                            {{ item.contractAddress | limitLength }}
+                            <template v-if="item.contractAddress != '0'">
+                                <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.contractAddress" ><i class="fa fa-copy"></i></button>
+                            </template>
+                        </td>
+                        <td>{{item.shortName}}: {{ item.value | toEther}}{{item.tokenCounts | toEther}}</td>
+                        <td :title="item.to">
+                            {{ item.to | limitLength }}
+                            <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.to" ><i class="fa fa-copy"></i></button>
+                        </td>
+                        <td>{{ item.actualCostFee | toEther }}</td>
+                        <td width="50">
+                            <i class="fa fa-copy" title="爬取创建" v-if="item.isMadeBySchedule"></i>
+                            <i class="fa fa-exchange" title="交易创建" v-if="!item.isMadeBySchedule"></i>
+
+                            <i class="fa fa-user" title="平台用户的交易记录" v-if="item.isPlatformUser"></i>
+                        </td>
+                        <!--<td>{{ item.isPlatformUser }}</td>-->
+                        <!--<td>{{ item.status }}</td>-->
+                        <td width="120">
+                            <a href="javascript:" v-if="permission.edit" @click="edit(index)" class="btn btn-white btn-xs"><i class="fa fa-refresh"></i> 重载 </a>
+                            <a href="javascript:" v-if="permission.del" @click="del(index)" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> 删除 </a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/bignumber.min.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/clipboard/clipboard.min.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                add : hasAuth("trans:insert"),
+                del : hasAuth("trans:delete"),
+                edit : hasAuth("trans:update")
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : 'TxHash', property: '', sortable : false },
+                { name : 'Block ', property: 'blockNumber', sortable : false },
+                { name : '交易时间', property: 'times', sortable : true },
+                { name : '录入时间', property: 'createTime', sortable : false },
+                { name : 'From', property: 'from', sortable : true },
+                { name : '合约地址', property: '', sortable : false },
+                { name : 'Value', property: 'value', sortable : false },
+                { name : 'To', property: 'to', sortable : true },
+                { name : 'TxFee(ether)', property: 'actualCostFee', sortable : false },
+                { name : '类型', property: '', sortable : false },
+                // { name : '爬取创建', property: 'isMadeBySchedule', sortable : true },
+                // { name : '平台交易', property: 'isPlatformUser', sortable : true },
+                // { name : '状态', property: 'status', sortable : true },
+                { name : '操作', property: '', sortable : false }
+            ]
+        },
+        methods: {
+            add : function() {
+                let html = "";
+                html += '<input type="text" class="form-control" id="newTxHash" placeholder="请输入交易Hash...">';
+                let temp = s.alertHtml("增加扫描交易", html, '', function () {
+                    let newTxHash = $('#newTxHash').val();
+                    if (!newTxHash || newTxHash === '') {
+                        s.tipError("#oldPwd", "请输入交易hash");
+                        return;
+                    }
+                    s.ajax(s.rootPath("/trans/reload/" + newTxHash), "POST", null, function (result) {
+                        table.list.unshift(result);
+                        layer.close(temp);
+                    });
+                });
+            },
+            edit : function (index) {
+                let tempId = table.list[index].hash;
+                s.ajax(s.rootPath("/trans/reload/" + tempId), "POST", null, function (result) {
+                    table.list.splice(index, 1, result);
+                });
+            },
+            del : function (index) {
+                let tempId = table.list[index].hash;
+                s.alert("确定删除？", function (hash) {
+                    s.ajax(s.rootPath("/trans/"+hash), "DELETE", null, function () {
+                        table.list.splice(index, 1);
+                    }, function () {
+                        s.alertError("删除失败，请联系管理员");
+                    });
+                }, tempId);
+            },
+            reloadTransaction: function() {
+                let html = "";
+                html += '<p class="text-danger">重置后，每爬去一个月区块需要约一周时间</p>';
+                html += '<input type="text" class="form-control" id="confirmWord" placeholder="如已知晓，请输入大写的：YES">';
+                let temp = s.alertHtml("确定重置？", html, '', function () {
+                    let confirmWord = $('#confirmWord').val();
+                    if (!confirmWord || confirmWord === '') {
+                        s.tipError("#confirmWord", "请输入YES表示已知晓");
+                        return;
+                    }
+                    if (confirmWord !== 'YES') {
+                        s.tipError("#confirmWord", "请输入YES表示已知晓");
+                        return;
+                    }
+                    s.ajax(s.rootPath("/trans/reloadTransaction"), "POST", null, function () {
+                        table.select();
+                        layer.close(temp);
+                    });
+                });
+            },
+            updateLimit: function() {
+                s.alert("如果配置文件更新了下限，且之前的爬取已到下限时间，则必须调用次此方法才生效", function () {
+                    s.ajax(s.rootPath("/trans/updateLimit"), "POST", null, function (result) {
+                        s.alertSuccess(result);
+                    });
+                });
+            },
+            clearBalanceCache: function() {
+                let html = "";
+                html += '<input type="text" class="form-control" id="clearBalanceAddress" placeholder="请输入要清理的钱包地址...">';
+                let temp = s.alertHtml("清理钱包余额缓存", html, '', function () {
+                    let clearBalanceAddress = $('#clearBalanceAddress').val();
+                    if (!clearBalanceAddress || clearBalanceAddress === '') {
+                        s.tipError("#clearBalanceAddress", "请输入要清理的钱包地址");
+                        return;
+                    }
+                    s.ajax(s.rootPath("/trans/clearBalanceCache/" + clearBalanceAddress), "POST", null, function (result) {
+                        s.alertSuccess(result);
+                        layer.close(temp);
+                    });
+                });
+            },
+            clearAllBalanceCache: function() {
+                s.alert("确定清除所有钱包地址余额缓存？", function (hash) {
+                    s.ajax(s.rootPath("/trans/clearAllBalanceCache"), "POST", null, function (result) {
+                        s.alertSuccess(result);
+                    });
+                });
+            },
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/trans"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+
+                        new Clipboard('.copy_btn');
+                    });
+                });
+            },
+            toUrl : function (input) {
+                let url = "https://etherscan.io/tx/" + input;
+                return '<a href="' + url + '" target="_blank">' + s.limitLength(input, 10) + '</a>';
+            }
+        },
+        filters: {
+            toEther : function (input) {
+                if (input === "") {
+                    return ""
+                }
+                return wei2etherNumber(input);
+            },
+            limitLength : function (input) {
+                return s.limitLength(input, 10);
+            },
+            formatter: function (input) {
+                return dateFormat(input);
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

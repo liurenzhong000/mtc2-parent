@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <div class="row">
+                            <h5 class="pull-right" style="text-shadow: 1px 1px #c2ccd1">借款奖励的记录会在对应的借款记录审批成功后生成</h5>
+                        </div>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 发放状态:
+                            <select name="bonusStatus" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">未发放</option>
+                                <option value="2">已发放</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id" :class="{success : (item.bonusStatus === 2)}" >
+                        <td>{{ item.promoter }}</td>
+                        <td>{{ item.sn }}</td>
+                        <td>{{ item.invitee }}</td>
+                        <td>{{ item.bonus }}</td>
+                        <td>{{ item.createTime | formatter }}</td>
+                        <td>{{ item.sendTime | formatter }}</td>
+                        <td>{{ item.bonusStatus | statusStr }}</td>
+                        <td width="120">
+                            <a href="javascript:" v-if="permission.update && item.bonusStatus === 1" @click="bonus(index)" class="btn btn-success btn-xs"><i class="fa fa-exchange"></i> 发放提成 </a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../js/bignumber.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/qrcode/qrcode.min.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                update : hasAuth("loanBonus:update"),
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '邀请人', property: 'promoter', sortable : false },
+                { name : '所属借币记录', property: 'sn', sortable : true },
+                { name : '被邀请人', property: 'invitee', sortable : false },
+                { name : '推广奖励', property: 'bonus', sortable : true },
+                { name : '邀请时间', property: 'createTime', sortable : true },
+                { name : '发放时间', property: 'sendTime', sortable : true },
+                { name : '状态', property: 'bonusStatus', sortable : true },
+                { name : '操作', property: '', sortable : false }
+            ]
+        },
+        methods: {
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/loan/bonus"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+                    });
+                });
+            },
+            bonus: function(index) {
+                let tmp = table.list[index];
+                let html = "";
+                html += '<p class="text-success">请直接用托管账户转账，成功后点击确认按钮</p>';
+                html += '<div id="bonusQrCode" style="width: 256px; height: 256px;"></div>';
+                html += '<input type="text" class="form-control m-t-sm" id="bonusValue" placeholder="提成金额(多少个MTC)">';
+                let temp = s.alertHtml("提成发放", html, '', function () {
+
+                    let bonusValue = $('#bonusValue').val();
+                    if (!bonusValue || bonusValue === '') {
+                        s.tipError("#bonusValue", "请输入提现金额");
+                        return;
+                    }
+                    if(!(/^\d+(\.\d{1,2})?$/.test(bonusValue))){
+                        s.alertError('提成金额需要为数字');
+                        return;
+                    }
+                    s.ajax(s.rootPath("/loan/bonus"), "POST", {id : tmp.id, bonus : bonusValue}, function () {
+                        table.list[index].bonusStatus = 2;
+                        table.list[index].bonus = bonusValue;
+                        layer.close(temp);
+                    });
+                });
+                s.delay(500, function () {
+                    new QRCode(document.getElementById('bonusQrCode'), tmp.promoter);
+                    // $('#bonusQrCode').qrcode(tmp.promoter);
+                });
+            }
+        },
+        filters: {
+            formatter: function (input) {
+                if (!input) {
+                    return '-';
+                }
+                return dateFormat(input);
+            },
+            statusStr: function (status) {
+                switch (status) {
+                    case 1:
+                        return '未发放';
+                    case 2:
+                        return '已发放';
+                }
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

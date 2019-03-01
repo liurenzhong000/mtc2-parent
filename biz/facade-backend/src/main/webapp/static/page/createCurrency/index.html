@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> Symbol:
+                            <input type="text" name="symbol" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 拥有者钱包地址:
+                            <input type="text" name="ownerAddress" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 状态:
+                            <select name="status" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">排队中</option>
+                                <option value="2">创建中</option>
+                                <option value="3">创建成功</option>
+                                <option value="4">创建失败</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id" :class="{success : (item.status === 3), info : (item.status === 2), danger : (item.status === 4)}" >
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.symbol }}</td>
+                        <td><img :src="item.image" width="20" /></td>
+                        <td>{{ item.supply }}</td>
+                        <td v-html="toUrl(item.website)"></td>
+                        <td>{{ item.description }}</td>
+                        <td :title="item.ownerAddress">
+                            {{ item.ownerAddress | limitLength }}
+                            <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.ownerAddress" ><i class="fa fa-copy"></i></button>
+                        </td>
+                        <td>{{ item.category.name }}</td>
+                        <td>{{ item.status | statusStr }}</td>
+                        <td :title="item.tokenAddress">
+                            {{ item.tokenAddress | limitLength }}
+                            <template v-if="typeof(item.tokenAddress) != 'undefined'">
+                                <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.tokenAddress" ><i class="fa fa-copy"></i></button>
+                            </template>
+                        </td>
+                        <td :title="item.txHash">
+                            {{ item.txHash | limitLength }}
+                            <template v-if="typeof(item.txHash) != 'undefined'">
+                                <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.txHash" ><i class="fa fa-copy"></i></button>
+                            </template>
+                        </td>
+                        <td>{{ item.createTime | formatter }}</td>
+                        <td>{{ item.successTime | formatter }}</td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/clipboard/clipboard.min.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '名称', property: 'name', sortable : true },
+                { name : '简称', property: 'symbol', sortable : true },
+                { name : '图片', property: '', sortable : false },
+                { name : '发行数量', property: 'supply', sortable : true },
+                { name : 'Token官网', property: '', sortable : false },
+                { name : '描述', property: '', sortable : false },
+                { name : '拥有者地址', property: 'ownerAddress', sortable : true },
+                { name : '分类', property: '', sortable : false },
+                { name : '状态', property: 'status', sortable : true },
+                { name : '合约地址', property: 'tokenAddress', sortable : false },
+                { name : '交易hash', property: 'txHash', sortable : false },
+                { name : '申请时间', property: 'createTime', sortable : true },
+                { name : '成功时间', property: 'successTime', sortable : true },
+            ]
+        },
+        methods: {
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/currency/created"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+
+                        new Clipboard('.copy_btn');
+                    });
+                });
+            },
+            toUrl : function (url) {
+                return '<a href="' + url + '" target="_blank">' + s.limitLength(url, 10) + '</a>';
+            }
+        },
+        filters: {
+            formatter: function (input) {
+                return dateFormat(input);
+            },
+            limitLength : function (input) {
+                return s.limitLength(input, 10);
+            },
+            statusStr : function (input) {
+                // 1排队中，2创建中，3创建成功，4创建失败
+                if (input === 1) {
+                    return '排队中';
+                } else if (input === 2) {
+                    return '创建中';
+                } else if (input === 3) {
+                    return '创建成功';
+                } else if (input === 4) {
+                    return '创建失败';
+                }
+                return '';
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+</head>
+<body>
+<div class="col-sm-12">
+    <form class="form-horizontal m-t" id="form">
+        <input type="hidden" name="id"/>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">地址：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="address" required/>
+                <span class="help-block m-b-none"><i class="fa fa-info-circle"></i> 代币合约地址</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">名称：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="name" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">简称：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="shortName" required />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">图片：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="image" required style="margin-bottom: 10px;" />
+
+                <div id="ossfile">你的浏览器不支持flash,Silverlight或者HTML5！</div>
+                <div id="container">
+                    <a id="selectfiles" href="javascript:void(0);" class='btn btn-success btn-xs'>选择文件</a>
+                    <a id="postfiles" href="javascript:void(0);" class='btn btn-success btn-xs'>开始上传</a>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">市场价（美元）：</label>
+            <div class="col-sm-8">
+                <input type="number" class="form-control" name="price" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">提现手续费：</label>
+            <div class="col-sm-8">
+                <input type="number" class="form-control" name="fee" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">来源类型：</label>
+            <div class="col-sm-8">
+                <select name="sourceType" class="form-control">
+                    <option value="1">本地</option>
+                    <option value="2">block.cc ->『确保与blockcc的name及symbol一致』</option>
+                    <option value="3">AIP交易所 ->『需要输入来源Key与交易所的ID保持一致』</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">来源Key：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="sourceSystemId" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">基链类型：</label>
+            <div class="col-sm-8">
+                <!--
+                 变更地址：
+                 1.facade-backend/webapp/static/page/currency/form.html 增加下拉类型【本文件】
+                 2.facade-backend/webapp/static/page/currency/index.html 增加类型判断
+                 3.facade-backend/webapp/static/page/user/balances.html 增加类型判断
+                 4.service-currency/entity/Currency 增加注释
+                 5.facade-api/controller/EthController 增加swagger说明
+                 6.facade-user/config/Swagger2 swagger说明
+                 -->
+                <select name="baseType" class="form-control">
+                    <option value="1">ETH</option>
+                    <option value="2">BCH</option>
+                    <option value="3">EOS</option>
+                    <option value="4">BTC</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">备注说明：</label>
+            <div class="col-sm-8">
+                <textarea type="text" class="form-control" name="note" ></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+
+<script src="../../plugins/validate/jquery.validate.min.js"></script>
+<script src="../../plugins/validate/messages_zh.min.js"></script>
+
+<script type="text/javascript" src="../../plugins/oss/lib/crypto1/crypto/crypto.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/crypto1/hmac/hmac.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/crypto1/sha1/sha1.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/base64.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/plupload-2.1.2/js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../../plugins/oss/upload.js"></script>
+
+<script>
+
+    function submit(completeCallback) {
+        let form = $("#form");
+        if(!form.valid()) {
+            return;
+        }
+
+        let id = $('input[name=id]').val();
+        let method = "PUT";
+        if (id) { // 更新
+            method = "POST";
+        }
+        s.ajax(s.rootPath('/currency'), method, {currencyJson : s.json2str(form.serializeObject())}, function (result) {
+            completeCallback(s.json2str(result));
+        });
+    }
+    uploader.callback = function (result) {
+        $('input[name=image]').val(result);
+    };
+</script>
+</html>

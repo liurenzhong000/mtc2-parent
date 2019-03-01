@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../css/animate.min.css" rel="stylesheet">
+    <link href="../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link href="../plugins/select2/css/select2.min.css" rel="stylesheet">
+    <title>首页</title>
+</head>
+<body class="gray-bg">
+<div id="dashboard" class="wrapper wrapper-content">
+    <template v-if="permission.endpoint">
+        <div class="row" >
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>服务器节点</h5>
+                        <div class="pull-right">
+                            <span class="label label-info pull-right">GETH</span>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-sm-2" v-for="temp in endpointInfo">
+                                <ul class="stat-list">
+                                    <li>
+                                        <h2 class="text-primary">节点{{temp.index}}</h2>
+                                    </li>
+                                    <li>
+                                        <template v-if="(temp.blockNum + 10) > pubBlockNum">
+                                            <div class="alert alert-success">
+                                                <small>区块高度</small>
+                                                <h3 class="no-margins">{{ temp.blockNum }} 正常</h3>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <template v-if="(temp.blockNum + 100) < pubBlockNum">
+                                                <div class="alert alert-danger">
+                                                    <small>区块高度</small>
+                                                    <h3 class="no-margins">{{ temp.blockNum }} 异常</h3>
+                                                    <!--<a class="alert-link" href="notifications.html#">强制重启</a>-->
+                                                </div>
+                                            </template>
+                                            <template v-else>
+                                                <div class="alert alert-warning">
+                                                    <small>区块高度</small>
+                                                    <h3 class="no-margins">
+                                                        {{ temp.blockNum }} 区块低
+                                                    </h3>
+                                                </div>
+                                            </template>
+                                        </template>
+                                    </li>
+                                    <li>
+                                        <small>上次智能重启时间</small>
+                                        <h3 class="no-margins">{{ temp.rebootTime }}</h3>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <span class="label label-success pull-right">最新</span>
+                        <h5>公网区块高度</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{pubBlockNum}}</h1>
+                        <template v-if="oldPubBlockNum">
+                            <div class="stat-percent font-bold text-success">{{ oldPubBlockNum }}</div>
+                            <small>{{ oldPubBlockNumTime }}</small>
+                        </template>
+                    </div>
+                </div>
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <span class="label label-success pull-right">Ether</span>
+                        <h5>创建合约钱包余额</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{createContractAccountBalance}}</h1>
+                        <div class="stat-percent font-bold"
+                             :class="{'text-info' : (createContractTimes >= 10), 'text-danger' : (createContractTimes < 10)}"
+                        >
+                            {{ createContractTimes }}
+                            <i v-if="(createContractTimes < 10)" class="fa fa-warning"></i>
+                        </div>
+                        <small>可创建合约次数</small>
+                    </div>
+                </div>
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <span class="label label-success pull-right">Ether</span>
+                        <h5>托管钱包余额</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <h1 class="no-margins">{{hostAccountBalance}}</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-10">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>服务状态</h5>
+                        <div class="pull-right">
+                            <span class="label label-primary pull-right m-l-sm"><a href="http://47.74.186.215/jenkins/" class="text-warning" target="_blank">Jenkins</a></span>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <table class="table table-hover">
+                            <tbody>
+                            <tr v-for="temp in instances">
+                                <td class="project-status">
+                                    <template v-if="(temp.total <= temp.upNum)">
+                                        <span class="label label-primary">正常</span>
+                                    </template>
+                                    <template v-else>
+                                        <template v-if="(temp.upNum == 0)">
+                                            <span class="label label-danger">异常</span>
+                                        </template>
+                                        <template v-else>
+                                            <span class="label label-warning">警告</span>
+                                        </template>
+                                    </template>
+                                </td>
+                                <td class="project-title">
+                                    <a href="javascript:">{{temp.name}}</a>
+                                    <br/>
+                                    <small>
+                                        <span class="label label-default">总共部署: {{temp.total}}</span>
+                                        <span v-if="temp.upNum != 0" class="label label-default">正常: {{temp.upNum}}</span>
+                                        <span v-if="temp.downNum != 0" class="label label-warning">Down: {{temp.downNum}}</span>
+                                        <span v-if="(temp.total -  temp.upNum - temp.downNum) != 0" class="label label-danger">宕: {{temp.total -  temp.upNum - temp.downNum}}</span>
+                                    </small>
+                                </td>
+                                <td class="project-completion">
+                                    <small>正常节点：{{temp.upNum}}/{{temp.total}}</small>
+                                    <div class="progress progress-mini">
+                                        <div :style="'width:' + (temp.upNum/temp.total*100) + '%;'" class="progress-bar"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template v-else>
+        <div class="row">
+            <iframe src="https://www.mtc.io/" frameBorder="0" width="100%" scrolling="no" height="950"></iframe>
+        </div>
+    </template>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="../js/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/constants.js"></script>
+<script src="../js/cqspy.js"></script>
+<script src="../plugins/layer/layer.js"></script>
+<script src="../js/dateFormat.js"></script>
+
+<script>
+    let dashboard = new Vue({
+        el: '#dashboard',
+        data: {
+            createContractAccountBalance: 0,
+            hostAccountBalance: 0,
+            createContractTimes: 0,
+            pubBlockNum: 0,
+            pubBlockNumTime: null,
+            oldPubBlockNum: 0,
+            oldPubBlockNumTime: null,
+            endpointInfo: [],
+            instances: [],
+            permission: {
+                endpoint : hasAuth("admin:select"),
+            }
+        },
+        methods: {
+            refreshData : function() {
+                s.ajax(s.rootPath("/endpoint"), "GET", null, function(result) {
+                    if (dashboard.pubBlockNum !== result.pubBlockNum) {
+                        if (dashboard.pubBlockNum !== 0) {
+                            dashboard.oldPubBlockNum = dashboard.pubBlockNum;
+                            dashboard.oldPubBlockNumTime = dashboard.pubBlockNumTime;
+                        }
+                        dashboard.pubBlockNumTime = new Date().Format("HH:mm:ss");
+                    }
+                    dashboard.pubBlockNum = result.pubBlockNum;
+                    dashboard.endpointInfo = result.endpointInfo;
+
+                    dashboard.createContractAccountBalance = result.createContractAccountBalance;
+                    dashboard.hostAccountBalance = result.hostAccountBalance;
+                    dashboard.createContractTimes = result.createContractTimes;
+                }, function () {}, false);
+
+                s.ajax(s.rootPath("/endpoint/instance"), "GET", null, function(result) {
+                    dashboard.instances = compareInstants(result);
+                }, function () {}, false);
+            }
+        }
+    });
+
+    refreshData();
+    function refreshData() {
+        dashboard.refreshData();
+        s.delay(30000, function () {
+            refreshData();
+        });
+    }
+</script>
+</html>

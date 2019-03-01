@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <link rel="shortcut icon" href="/backend/favicon.ico" />
+    <style>
+        .sk-spinner-cube-grid.sk-spinner {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto;
+        }
+        .sk-spinner-cube-grid .sk-cube {
+            width: 33%;
+            height: 33%;
+            background-color: #1ab394;
+            float: left;
+            -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+            animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(1) {
+            -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(2) {
+            -webkit-animation-delay: 0.3s;
+            animation-delay: 0.3s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(3) {
+            -webkit-animation-delay: 0.4s;
+            animation-delay: 0.4s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(4) {
+            -webkit-animation-delay: 0.1s;
+            animation-delay: 0.1s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(5) {
+            -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(6) {
+            -webkit-animation-delay: 0.3s;
+            animation-delay: 0.3s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(7) {
+            -webkit-animation-delay: 0s;
+            animation-delay: 0s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(8) {
+            -webkit-animation-delay: 0.1s;
+            animation-delay: 0.1s;
+        }
+        .sk-spinner-cube-grid .sk-cube:nth-child(9) {
+            -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s;
+        }
+        @-webkit-keyframes sk-cubeGridScaleDelay {
+            0%,
+            70%,
+            100% {
+                -webkit-transform: scale3D(1, 1, 1);
+                transform: scale3D(1, 1, 1);
+            }
+            35% {
+                -webkit-transform: scale3D(0, 0, 1);
+                transform: scale3D(0, 0, 1);
+            }
+        }
+        @keyframes sk-cubeGridScaleDelay {
+            0%,
+            70%,
+            100% {
+                -webkit-transform: scale3D(1, 1, 1);
+                transform: scale3D(1, 1, 1);
+            }
+            35% {
+                -webkit-transform: scale3D(0, 0, 1);
+                transform: scale3D(0, 0, 1);
+            }
+        }
+
+        #pageLoadingMask {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        #pageLoading {
+            position:absolute;
+            left:calc(50% - 20px);
+            top: calc(50% - 20px);
+            background: #fff;
+            z-index: 999;
+        }
+    </style>
+    <title>MTC</title>
+</head>
+<body>
+    <div id="pageLoadingMask"></div>
+    <div id="pageLoading" class="sk-spinner sk-spinner-cube-grid">
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+        <div class="sk-cube"></div>
+    </div>
+    <div id="wrapper">
+    </div>
+</body>
+<script src="/backend/js/jquery.min.js?v=2.1.4"></script>
+<script src="/backend/plugins/layer/layer.js"></script>
+<script src="/backend/js/constants.js"></script>
+<script src="/backend/js/cqspy.js"></script>
+<script>
+    // http://localhost:8080/backend/customPage/about
+    let url = window.location.href;
+    let start = url.lastIndexOf('/') + 1;
+    // about
+    let tag = url.substr(start);
+
+    s.ajax(s.rootPath("/custom/detail/" + tag), "GET", null, function (result) {
+        let wrapper = $('#wrapper');
+        wrapper.empty().append(result.content);
+        $(document).attr("title", result.title);
+
+        // 图片全部加载完后，就刷新高度
+        let imgdefereds=[];
+        wrapper.find('img').each(function(){
+            let dfd = $.Deferred();
+            $(this).bind('load',function(){
+                dfd.resolve();
+            }).bind('error',function(){
+                //图片加载错误，加入错误处理
+                dfd.resolve();
+            });
+            if(this.complete) setTimeout(function(){
+                dfd.resolve();
+            },1000);
+            imgdefereds.push(dfd);
+        });
+        $.when.apply(null,imgdefereds).done(function(){
+            $('#pageLoading').hide();
+            $('#pageLoadingMask').hide();
+        });
+    }, function (error) {
+        $('#wrapper').empty().append(error);
+    }, true);
+</script>
+
+</html>

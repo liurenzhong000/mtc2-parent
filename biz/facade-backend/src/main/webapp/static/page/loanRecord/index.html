@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 借款编号:
+                            <input type="text" name="sn" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 状态:
+                            <select name="status" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">审核中</option>
+                                <option value="2">审核未通过</option>
+                                <option value="3">借款处理中</option>
+                                <option value="4">待还币</option>
+                                <option value="5">已完成</option>
+                                <option value="6">已逾期</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id" :class="{success : (item.status === 5 || item.status === 2), danger : (item.status === 4 && (item.shouldReturnTime < new Date()))}" >
+                        <td>{{ item.sn }}</td>
+                        <td>
+                            {{ item.status | statusStr }}
+                            <template v-if="item.status == 4 && (item.shouldReturnTime < new Date())">
+                                <span class="label label-danger">已逾期</span>
+                            </template>
+                        </td>
+                        <td>{{ item.createTime | formatter }}</td>
+                        <td>{{ item.verifyTime | formatter }}</td>
+                        <td>{{ item.borrowTime | formatter }}</td>
+                        <td>{{ item.shouldReturnTime | formatter }}</td>
+                        <td>{{ item.returnTime | formatter }}</td>
+                        <td>{{ item.mortgageToken }}</td>
+                        <td>{{ item.borrowToken }}</td>
+                        <td>{{ item.borrowNumber | toEther }}</td>
+                        <td>{{ item.repayment | toEther }}</td>
+                        <td>{{ item.borrowDayNum }}日</td>
+                        <td>{{ item.borrowRate }}%</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.identifyNum }}</td>
+                        <td>{{ item.phone }}</td>
+                        <td>{{ item.wechat }}</td>
+                        <td>
+                            {{ item.promoter }}
+                        </td>
+                        <td width="120">
+                            <template v-if="permission.update">
+                                <template v-if="item.status == 1">
+                                    <a href="javascript:" @click="changeStat(index, 2)" class="btn btn-danger btn-xs"><i class="fa fa-minus-square"></i> 审核不通过 </a>
+                                    <a href="javascript:" @click="changeStat(index, 3)" class="btn btn-success btn-xs"><i class="fa fa-check-square"></i> 审核通过 </a>
+                                </template>
+                                <template v-if="item.status == 3">
+                                    <a href="javascript:" @click="changeStat(index, 4)" class="btn btn-warning btn-xs"><i class="fa fa-arrow-circle-right"></i> 已放款 </a>
+                                </template>
+                                <template v-if="item.status == 4">
+                                    <a href="javascript:" @click="changeStat(index, 5)" class="btn btn-primary btn-xs"><i class="fa fa-angellist"></i> 已还款 </a>
+                                </template>
+                            </template>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../js/bignumber.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                update : hasAuth("loanRecord:update"),
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '借款编号', property: 'sn', sortable : true },
+                { name : '状态', property: 'status', sortable : true },
+                { name : '申请时间', property: 'createTime', sortable : true },
+                { name : '审核时间', property: 'verifyTime', sortable : true },
+                { name : '放款时间', property: 'borrowTime', sortable : true },
+                { name : '应还款', property: 'shouldReturnTime', sortable : true },
+                { name : '还款时间', property: 'returnTime', sortable : true },
+                { name : '抵押币种', property: 'mortgageToken', sortable : true },
+                { name : '借入币种', property: 'borrowToken', sortable : true },
+                { name : '数量', property: 'borrowNumber', sortable : true },
+                { name : '还款', property: 'repayment', sortable : true },
+                { name : '期限', property: 'borrowDayNum', sortable : true },
+                { name : '利率', property: 'borrowRate', sortable : true },
+                { name : '姓名', property: 'name', sortable : true },
+                { name : '身份证', property: '', sortable : false },
+                { name : '手机号', property: 'phone', sortable : true },
+                { name : '微信', property: 'wechat', sortable : true },
+                { name : '推广人', property: 'promoter', sortable : true },
+                { name : '操作', property: '', sortable : false }
+            ]
+        },
+        methods: {
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/loan"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+                    });
+                });
+            },
+            changeStat : function(index, targetStatus) {
+                let tempId = table.list[index].id;
+                let warnTitle = "审核不通过?";
+                if (targetStatus === 3) {
+                    warnTitle = "审核通过?";
+                } else if (targetStatus === 4) {
+                    warnTitle = "已放款?";
+                } else if (targetStatus === 5) {
+                    warnTitle = "已还款?";
+                }
+
+                if (targetStatus === 5) {
+                    let html = "";
+                    html += '<input type="text" class="form-control m-t-sm" id="repayment" placeholder="还款金额(多少个)">';
+                    let temp = s.alertHtml("确定" + warnTitle, html, '', function () {
+
+                        let repayment = $('#repayment').val();
+                        if (!repayment || repayment === '') {
+                            s.tipError("#bonusValue", "请输入还款金额");
+                            return;
+                        }
+                        if(!(/^[0-9]+.?[0-9]*$/.test(repayment))){
+                            s.alertError('还款金额需要为数字');
+                            return;
+                        }
+                        s.ajax(s.rootPath("/loan"), "POST", {id : tempId, targetStatus : targetStatus, repayment : repayment}, function () {
+                            table.list[index].status = targetStatus;
+                            table.list[index].repayment = new BigNumber(repayment).multipliedBy(1000000000000000000).toNumber();
+                            layer.close(temp);
+                        });
+                    });
+                } else {
+                    s.alert("确定" + warnTitle, function () {
+                        s.ajax(s.rootPath("/loan"), "POST", {id : tempId, targetStatus : targetStatus}, function () {
+                            table.list[index].status = targetStatus;
+                        });
+                    });
+                }
+            },
+        },
+        filters: {
+            toEther : function (input) {
+                if (input === "") {
+                    return ""
+                }
+                return wei2etherNumber(input);
+            },
+            formatter: function (input) {
+                if (!input) {
+                    return '-';
+                }
+                return dateFormat(input);
+            },
+            statusStr: function (status) {
+                switch (status) {
+                    case 1:
+                        return '审核中';
+                    case 2:
+                        return '审核未通过';
+                    case 3:
+                        return '借款处理中';
+                    case 4:
+                        return '待还币';
+                    case 5:
+                        return '已完成';
+                }
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 名字:
+                            <input type="text" id="name" name="name" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 是否有效:
+                            <select name="isEnable" class="form-control">
+                                <option value="">不限</option>
+                                <option value="true">有效</option>
+                                <option value="false">无效</option>
+                            </select>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 基链类型:
+                            <select name="baseType" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">ETH</option>
+                                <option value="2">BCH</option>
+                                <option value="3">EOS</option>
+                                <option value="4">BTC</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id">
+                        <td :title="item.address">
+                            {{ item.address | limitLength }}
+                            <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.address" ><i class="fa fa-copy"></i></button>
+                        </td>
+                        <td><img :src="item.image" width="20" /></td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.shortName }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.cnyPrice }}</td>
+                        <td>{{ item.fee }}</td>
+                        <td>{{ item.sourceType | sourceTypeStr }}</td>
+                        <!--<td>{{ item.sourceSystemId }}</td>-->
+                        <td>{{ item.baseType | baseTypeStr }}</td>
+                        <td>
+                            <input type="checkbox" v-model="item.isDefaultVisible" @change="changeStat(index, 1)" />
+                        </td>
+                        <td>
+                            <input type="checkbox" v-model="item.isEnabled" @change="changeStat(index, 2)" />
+                        </td>
+                        <td>
+                            <input type="checkbox" v-model="item.redPacketEnabled" @change="changeStat(index, 3)" />
+                        </td>
+                        <td>
+                            <input type="checkbox" v-model="item.hostEnabled" @change="changeStat(index, 4)" />
+                        </td>
+                        <td :title="item.note">{{ item.note | limitLength }}</td>
+                        <!--<td>{{ item.updateTime | formatter }}</td>-->
+                        <td width="120">
+                            <a href="javascript:" v-if="permission.edit" @click="edit(index)" class="btn btn-white btn-xs"><i class="fa fa-pencil"></i> 编辑 </a>
+                            <a href="javascript:" v-if="permission.del" @click="del(index)" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> 删除 </a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/clipboard/clipboard.min.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                add : hasAuth("currency:insert"),
+                del : hasAuth("currency:delete"),
+                edit : hasAuth("currency:update")
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '地址', property: '', sortable : false },
+                { name : '图片', property: '', sortable : false },
+                { name : '名称', property: 'name', sortable : true },
+                { name : '简称', property: 'shortName', sortable : true },
+                { name : '市场价($)', property: 'price', sortable : true },
+                { name : '市场价(￥)', property: 'cnyPrice', sortable : true },
+                { name : '提现手续费', property: 'fee', sortable : true },
+                { name : '来源类型', property: 'sourceType', sortable : true },
+                // { name : '来源Key', property: 'sourceSystemId', sortable : true },
+                { name : '基链类型', property: 'baseType', sortable : true },
+                { name : '默认显示', property: 'isDefaultVisible', sortable : true },
+                { name : '有效', property: 'isEnabled', sortable : true },
+                { name : '支持红包', property: 'redPacketEnabled', sortable : true },
+                { name : '支持托管', property: 'hostEnabled', sortable : true },
+                { name : '备注说明', property: 'note', sortable : true },
+                // { name : '更新时间', property: 'updateTime', sortable : true },
+                { name : '操作', property: '', sortable : false }
+            ]
+        },
+        methods: {
+            changeStat : function(index, type) {
+                let tempId = table.list[index].id;
+                s.ajax(s.rootPath("/currency/changeStat/" + tempId), "POST", {type : type}, function (result) {
+                    table.list.splice(index, 1, result);
+                }, function (content) {
+                    s.alertError(content)
+                }, true);
+            },
+            add : function() {
+                s.openAdd("增加币种", "form.html", function (result) {
+                    table.list.unshift(s.str2json(result));
+                });
+            },
+            edit : function (index) {
+                s.openAdd("修改币种", "form.html", function (result) {
+                    table.list.splice(index, 1, s.str2json(result));
+                }, s.json2str(table.list[index]));
+            },
+            del : function (index) {
+                let tempId = table.list[index].id;
+                s.alert("确定删除？", function (id) {
+                    s.ajax(s.rootPath("/currency/"+id), "DELETE", null, function () {
+                        table.list.splice(index, 1);
+                    }, function () {
+                        s.alertError("删除失败，请联系管理员");
+                    });
+                }, tempId);
+            },
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/currency"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+
+                        new Clipboard('.copy_btn');
+                    });
+                });
+            }
+        },
+        filters: {
+            formatter: function (input) {
+                return dateFormat(input);
+            },
+            limitLength : function (input) {
+                return s.limitLength(input, 10);
+            },
+            sourceTypeStr : function (input) {
+                // 1:本地，2:block.cc
+                if (input === 1) {
+                    return '本地';
+                } else if (input === 2) {
+                    return 'block.cc';
+                } else if (input === 3) {
+                    return 'AIP交易所';
+                }
+                return '';
+            },
+            baseTypeStr : function (input) {
+                // 基链类型 1:eth, 2:BTC
+                if (input === 1) {
+                    return 'ETH';
+                } else if (input === 2) {
+                    return 'BCH';
+                } else if (input === 3) {
+                    return 'EOS';
+                } else if (input === 4) {
+                    return 'BTC';
+                }
+                return '';
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

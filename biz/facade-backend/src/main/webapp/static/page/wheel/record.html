@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <button data-toggle="dropdown" class="btn btn-white dropdown-toggle" style="width: 100px;" type="button" aria-expanded="false">
+                                        <span id="selectUserTypeText">用户查询</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="javascript:;" @click="selectUserType(0, '用户查询')">不限</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="javascript:;" @click="selectUserType(1, '手机号')">手机号</a></li>
+                                        <li><a href="javascript:;" @click="selectUserType(2, '邮箱')">邮箱</a></li>
+                                        <li><a href="javascript:;" @click="selectUserType(3, 'ID')">ID</a></li>
+                                    </ul>
+                                </div>
+                                <input type="hidden" name="selectUserType" id="selectUserType"/>
+                                <input type="text" name="userInfo" class="form-control">
+                            </div>
+                        </label>
+                        <div class="form-group m-l-lg m-t-sm m-b-sm">
+                            <label class="font-noraml">交易时间：</label>
+                            <div class="input-daterange input-group" id="datepicker">
+                                <input type="text" class="form-control" id="startTime" name="startTime" placeholder="请选择开始时间">
+                                <span class="input-group-addon">到</span>
+                                <input type="text" class="form-control" id="endTime" name="endTime" placeholder="请选择结束时间">
+                            </div>
+                        </div>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 状态:
+                            <select name="status" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">已发放</option>
+                                <option value="2">未发放</option>
+                            </select>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 奖品名:
+                            <input type="text" name="prizeName" class="form-control"/>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <!--<a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>-->
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id">
+                        <td>
+                            <img :src="item.user.photo" width="20" /> {{item.user.userName}}
+                            <a href="javascript:" @click="userDetail(index)"><i class="fa fa-qrcode"></i></a>
+                        </td>
+                        <td><img :src="item.pic" width="20" /> {{item.name}}</td>
+                        <td>
+                            {{ item.status | statusConvert }}
+                            <a href="javascript:" v-if="item.status != 1" @click="updateStatus(index, 1)" class="btn btn-success btn-xs"><i class="fa fa-send"></i> 已发放 </a>
+                        </td>
+                        <td>{{ item.createTime | formatter }}</td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/laydate/laydate.js"></script>
+<script src="../../plugins/qrcode/qrcode.min.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    laydate.render({
+        elem: '#startTime'
+        ,type: 'datetime'
+    });
+    laydate.render({
+        elem: '#endTime' //指定元素
+        ,type: 'datetime'
+    });
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                // updatePromoter : hasAuth("user:updatePromoter"),
+                // deposit : hasAuth("user:deposit"),
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '中奖用户', property: '', sortable : false },
+                { name : '奖品', property: '', sortable : false },
+                { name : '状态', property: 'status', sortable : false },
+                { name : '中奖时间', property: 'createTime', sortable : true },
+            ]
+        },
+        methods: {
+            userDetail : function (index) {
+                let record = table.list[index];
+                let userName = record.user.userName;
+                let phone = record.user.phone;
+                let email = record.user.email;
+                let target;
+
+                let html = "";
+                html += '<p class="text-primary">'+userName+'</p>';
+                if (email) {
+                    target = email;
+                    html += '<p class="text-primary">'+email+'</p>';
+                }
+                if (phone) {
+                    target = phone;
+                    html += '<p class="text-primary">'+phone+'</p>';
+                }
+                html += '<div id="bonusQrCode" style="width: 256px; height: 256px;"></div>';
+                html += '<span class="label label-info">'+target+'</span>';
+                s.alertHtml("用户详情", html, '');
+                s.delay(500, function () {
+                    new QRCode(document.getElementById('bonusQrCode'), target);
+                });
+            },
+            updateStatus : function (index, status) {
+                let temp = table.list[index];
+                let param = {
+                    recordId : temp.id,
+                    status : status
+                };
+                s.alert("确定设置为已发放？", function () {
+                    s.ajax(s.rootPath("/wheel/record"), "POST", param, function () {
+                        temp.status = status;
+                    });
+                });
+            },
+            selectUserType : function (type, text) {
+                $('#selectUserType').val(type);
+                $('#selectUserTypeText').empty().append(text);
+            },
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/wheel/record"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+                    });
+                });
+            },
+        },
+        filters: {
+            statusConvert: function(input) {
+                if (input === 1) {
+                    return '已发放'
+                } else {
+                    return '未发放'
+                }
+            },
+            formatter: function (input) {
+                if (input == null) {
+                    return '-';
+                }
+                return dateFormat(input);
+            }
+        },
+        created: function () {
+            this.select(true);
+        }
+    });
+</script>
+</html>

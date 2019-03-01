@@ -1,0 +1,123 @@
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    box-sizing: border-box;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    color: #fefeff;
+    -webkit-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+}
+body {
+    font-family:"Microsoft YaHei";
+    overflow:hidden;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.logo {
+    width: 75px;
+    height: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    align-self: flex-end;
+}
+.banner {
+    width: 248px;
+    height: 254px;
+    margin-top: 10px;
+}
+.info {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+    border: 2px solid #e7c674;
+    margin-top: 40px;
+    border-top: none;
+    min-width: 200px;
+}
+.info:before {
+    position: absolute;
+    content: '';
+    left: 0;
+    top: 0;
+    width: calc(50% - 45px);
+    height: 2px;
+    background: #e7c674;
+}
+.info-title:before {
+    position: absolute;;
+    content: '';
+    width: 16px;
+    height: 16px;
+    left: calc(50% - 45px);
+    top: -7px;
+    background: url("../../img/share/point.png");
+    background-size: cover;
+}
+.info:after {
+    position: absolute;
+    content: '';
+    left: calc(50% + 45px);
+    top: 0;
+    width: calc(50% - 45px);
+    height: 2px;
+    background: #e7c674;
+}
+.info-title:after {
+    position: absolute;;
+    content: '';
+    width: 16px;
+    height: 16px;
+    left: calc(50% + 29px);
+    top: -7px;
+    background: url("../../img/share/point.png");
+    background-size: cover;
+}
+.info-title {
+    margin-top: -6px;
+    color: #e7c674;
+    font-size: 10px;
+}
+.info-content {
+    color: #fff;
+    font-size: 15px;
+    padding: 8px;
+    text-align: center;
+}
+.download-btn {
+    width: 132px;
+    height: 35px;
+    display: flex;
+    background: url("../../img/share/download.png") no-repeat center;
+    background-size: cover;
+    margin-top: 70px;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    font-size: 21px;
+    font-weight: bold;
+}
+.copy-btn {
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fdd432;
+    margin: 22px 0 30px;
+}

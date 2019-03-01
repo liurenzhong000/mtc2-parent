@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <button data-toggle="dropdown" class="btn btn-white dropdown-toggle" style="width: 100px;" type="button" aria-expanded="false">
+                                        <span id="selectUserTypeText">用户查询</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="javascript:;" @click="selectUserType(0, '用户查询')">不限</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="javascript:;" @click="selectUserType(1, '手机号')">手机号</a></li>
+                                        <li><a href="javascript:;" @click="selectUserType(2, '邮箱')">邮箱</a></li>
+                                        <li><a href="javascript:;" @click="selectUserType(3, 'ID')">ID</a></li>
+                                    </ul>
+                                </div>
+                                <input type="hidden" name="selectUserType" id="selectUserType"/>
+                                <input type="text" name="userInfo" class="form-control">
+                            </div>
+                        </label>
+                        <div class="form-group m-l-lg m-t-sm m-b-sm">
+                            <label class="font-noraml">交易时间：</label>
+                            <div class="input-daterange input-group" id="datepicker">
+                                <input type="text" class="form-control" id="startTime" name="startTime" placeholder="请选择开始时间">
+                                <span class="input-group-addon">到</span>
+                                <input type="text" class="form-control" id="endTime" name="endTime" placeholder="请选择结束时间">
+                            </div>
+                        </div>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 支付币种:
+                            <select name="payCurrency" class="form-control">
+                                <option value="">不限</option>
+                                <option value="AIP">AIP</option>
+                                <option value="IMC">IMC</option>
+                            </select>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 交易类型:
+                            <select name="tradeType" class="form-control">
+                                <option value="">不限</option>
+                                <option value="102">云矿购买</option>
+                                <option value="101">云矿提现</option>
+                            </select>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 交易ID:
+                            <input type="number" name="tradeId" class="form-control"/>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id" :class="{success : (item.status === 3), danger : (item.status === 4)}" >
+                        <td>{{ item.bill.id }}</td>
+                        <td>{{ item.tradeTime | formatter }}</td>
+                        <td>{{ item.bill.type | typeValue }}</td>
+                        <td>{{ item.cnyMoney }}</td>
+                        <td>{{ item.payCurrency }}</td>
+                        <td>{{ item.currencyCnyPrice }}</td>
+                        <td>{{ item.actCost | toEther }}</td>
+                        <td>{{ !item.payUser.phone ? item.payUser.email : item.payUser.phone }}</td>
+                        <td>{{ !item.receiveUser.phone ? item.receiveUser.email : item.receiveUser.phone }}</td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../js/bignumber.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/clipboard/clipboard.min.js"></script>
+<script src="../../plugins/laydate/laydate.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    laydate.render({
+        elem: '#startTime'
+        ,type: 'datetime'
+    });
+    laydate.render({
+        elem: '#endTime' //指定元素
+        ,type: 'datetime'
+    });
+
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '交易ID', property: '', sortable : false },
+                { name : '交易时间', property: 'tradeTime', sortable : true },
+                { name : '交易类型', property: '', sortable : false },
+                { name : '支付金额(￥)', property: 'cnyMoney', sortable : true },
+                { name : '支付币种', property: 'payCurrency',  sortable: true },
+                { name : '币价(￥)', property: 'currencyCnyPrice', sortable : true },
+                { name : '实际支付数量', property: 'actCost', sortable : true },
+                { name : '收款帐号', property: '', sortable : false },
+                { name : '付款帐号', property: '', sortable : false },
+            ]
+        },
+        methods: {
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/hostUser/yunkuang"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+
+                        new Clipboard('.copy_btn');
+                    });
+                });
+            },
+            selectUserType : function (type, text) {
+                $('#selectUserType').val(type);
+                $('#selectUserTypeText').empty().append(text);
+            },
+        },
+        filters: {
+            toEther : function (input) {
+                if (input === "") {
+                    return ""
+                }
+                return wei2etherNumber(input);
+            },
+            typeValue : function (input) {
+                switch (input) {
+                    case 'TRANSFER_INCOME':
+                        return '云矿购买';
+                    case 'TRANSFER_WITHDRAW':
+                        return '云矿提现';
+                    case 'TRANSFER_PAY':
+                        return '支付';
+                    default:
+                        return '未知，请联系管理员';
+                }
+            },
+            limitLength : function (input) {
+                return s.limitLength(input, 10);
+            },
+            formatter: function (input) {
+                return dateFormat(input);
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

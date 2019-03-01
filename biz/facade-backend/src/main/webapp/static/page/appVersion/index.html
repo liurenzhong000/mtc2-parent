@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 手机平台:
+                            <select name="isAndroid" class="form-control">
+                                <option value="">不限</option>
+                                <option value="true">安卓</option>
+                                <option value="false">苹果</option>
+                            </select>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 是否激活:
+                            <select name="isActive" class="form-control">
+                                <option value="">不限</option>
+                                <option value="true">激活</option>
+                                <option value="false">未激活</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id">
+                        <td>{{ item.versionName }}</td>
+                        <td>{{ item.versionNumber }}</td>
+                        <td>{{ item.url }}</td>
+                        <td>
+                            <input type="checkbox" v-model="item.isActive" @change="change(index)" />
+                        </td>
+                        <td>{{ item.isAndroid | formatPlatform }}</td>
+                        <td>{{ item.createTime | formatter }}</td>
+                        <td>
+                            <a href="javascript:" v-if="permission.edit" @click="edit(index)" class="btn btn-white btn-xs"><i class="fa fa-pencil"></i> 编辑 </a>
+                            <a href="javascript:" v-if="permission.del" @click="del(index)" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> 删除 </a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                add : hasAuth("appVersion:insert"),
+                del : hasAuth("appVersion:delete"),
+                edit : hasAuth("appVersion:update")
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '版本名', property: 'versionName', sortable : true },
+                { name : '版本号', property: 'versionNumber', sortable : true },
+                { name : '链接', property: '', sortable : false },
+                { name : '激活', property: 'isActive', sortable : true },
+                { name : '平台', property: 'isAndroid', sortable : true },
+                { name : '创建时间', property: 'createTime', sortable : true },
+                { name : '操作', property: '', sortable : false }
+            ]
+        },
+        methods: {
+            change :function(index) {
+                let tempId = table.list[index].id;
+                s.ajax(s.rootPath("/appVersion/changeActive/" + tempId), "POST", null, function (result) {
+                    table.select();
+                }, function (error) {
+                    s.alertError(error);
+                }, true);
+            },
+            add : function() {
+                s.openAdd("增加App版本", "form.html", function (result) {
+                    table.list.unshift(s.str2json(result));
+                });
+            },
+            edit : function (index) {
+                s.openAdd("修改App版本", "form.html", function (result) {
+                    table.list.splice(index, 1, s.str2json(result));
+                }, s.json2str(table.list[index]));
+            },
+            del : function (index) {
+                let tempId = table.list[index].id;
+                s.alert("确定删除？", function (id) {
+                    s.ajax(s.rootPath("/appVersion/"+id), "DELETE", null, function () {
+                        table.list.splice(index, 1);
+                    }, function () {
+                        s.alertError("删除失败，请联系管理员");
+                    });
+                }, tempId);
+            },
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/appVersion"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+                    });
+                });
+            }
+        },
+        filters: {
+            formatter: function (input) {
+                return dateFormat(input);
+            },
+            formatPlatform: function (input) {
+                if (input) {
+                    return '安卓';
+                } else {
+                    return '苹果';
+                }
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

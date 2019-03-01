@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/page/login.css" type="text/css" />
+    <link rel="stylesheet" href="plugins/ladda/ladda-themeless.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/animate.min.css" type="text/css" />
+    <title>登录</title>
+</head>
+<body ondragstart="window.event.returnValue=false" oncontextmenu="window.event.returnValue=false" onselectstart="event.returnValue=false">
+<div id="container">
+    <div>
+        <h1 id="h1">欢迎使用</h1>
+        <h2 id="h2" style="margin-bottom: 30px;">MTC 后台管理系统</h2>
+        <div class="row-fluid animated flipInX">
+            <form onsubmit="return false;" id="loginForm" class="col-lg-4 col-md-4 col-lg-offset-4 col-md-offset-4">
+                <div class="row">
+                    <div class="form-group">
+                        <input type="text" id="username" name="username" class="form-control" placeholder="用户名"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="密码"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <button type="submit" id="loginBtn" class="ladda-button btn btn-success col-lg-12 col-md-12" data-style="zoom-in">登录</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<canvas id="canvas"></canvas>
+<script src="js/constants.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/page/login.js"></script>
+<script src="plugins/layer/layer.js"></script>
+<script src="plugins/ladda/spin.min.js"></script>
+<script src="plugins/ladda/ladda.min.js"></script>
+<script src="plugins/ladda/ladda.jquery.min.js"></script>
+<script src="js/cqspy.js"></script>
+<script>
+    $(function(){
+        // 判断是否已经登录
+        s.ajax(s.rootPath("/isLogin"), 'GET', null, function (result) {
+            // 已经登录
+            if (result.result === true) {
+                location.href = webRoot + "/";
+            }
+        }, function(result) {
+            s.alertError(result);
+            console.log("是否忘记换constants.js里面的请求域名路径？？");
+        });
+    });
+
+    var loginBtn = $('#loginBtn').ladda();
+    // 登录
+    loginBtn.click(function() {
+        loginBtn.ladda('start');
+        var username = $.trim($('#username').val());
+        var password = $.trim($('#password').val());
+        if (username === "" || password === "") {
+            s.tipError("#loginForm", '用户名或者密码不能为空');
+            loginBtn.ladda('stop');
+            return;
+        }
+        s.ajax(s.rootPath("/doLogin"), 'POST', {username : username, password : password}, function (result) {
+            s.set("username", result.username);
+            s.set("roleName", result.roleName);
+
+            s.set("auths", s.json2str(result.auths));
+            // 登录成功
+            location.href = webRoot + "/";
+            loginBtn.html('登录成功,跳转中...');
+        }, function (result) {
+            loginBtn.ladda('stop');
+            s.tipError("#loginForm", result);
+        }, true);
+    });
+</script>
+</body>
+</html>

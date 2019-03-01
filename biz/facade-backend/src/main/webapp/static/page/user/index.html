@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 邮件:
+                            <input type="text" name="email" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 电话:
+                            <input type="text" name="phone" class="form-control"/>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <!--<a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>-->
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.nick }}</td>
+                        <td><img :src="item.photo" width="20" /></td>
+                        <td>{{ item.email }}</td>
+                        <td>{{ item.phone }}</td>
+                        <td>
+                            {{ item.promoter }}
+                            <a href="javascript:" v-if="permission.updatePromoter" @click="updatePromoter(index)" class="btn btn-xs"><i class="fa fa-edit"></i> </a>
+                        </td>
+                        <td>{{ item.canWithdrawTime | formatter }}</td>
+                        <td>{{ item.createTime | formatter }}</td>
+                        <td>
+                            <a href="javascript:" @click="showBalance(index)" class="btn btn-success btn-xs"><i class="fa fa-info-circle"></i> 余额详情 </a>
+                            <a href="javascript:" v-if="permission.deposit" @click="deposit(index)" class="btn btn-danger btn-xs"><i class="fa fa-dedent"></i> 充值 </a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                updatePromoter : hasAuth("user:updatePromoter"),
+                deposit : hasAuth("user:deposit"),
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '用户ID', property: 'id', sortable : true },
+                { name : '昵称', property: 'nick', sortable : true },
+                { name : '头像', property: 'photo', sortable : false },
+                { name : '邮件', property: 'email', sortable : true },
+                { name : '手机', property: 'phone', sortable : true },
+                { name : '推荐人', property: 'promoter', sortable : true },
+                { name : '冻结时间', property: 'canWithdrawTime', sortable : true },
+                { name : '创建时间', property: 'createTime', sortable : true },
+                { name : '操作', property: '', sortable : false }
+            ]
+        },
+        methods: {
+            showBalance : function(index) {
+                s.openAdd("用户余额", "balances.html", function (result) {
+                    // table.list.unshift(s.str2json(result));
+                }, s.json2str(table.list[index]));
+            },
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/hostUser/selectUser"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+                    });
+                });
+            },
+            updatePromoter : function (index) {
+                let tmp = table.list[index];
+                let html = "";
+                html += '<input type="text" class="form-control m-t-sm" id="targetPromoter" value="' + tmp.promoter + '" placeholder="请输入推广人手机号/邮箱">';
+                let temp = s.alertHtml("修改推荐人", html, '', function () {
+
+                    let targetPromoter = $('#targetPromoter').val();
+                    if(!targetPromoter){
+                        s.alertError('请输入推荐人');
+                        return;
+                    }
+
+                    let param = {uid : tmp.id, promoter: targetPromoter};
+                    s.ajax(s.rootPath("/hostUser/updatePromoter"), "POST", param, function () {
+                        s.alertSuccess("修改成功");
+                        tmp.promoter = targetPromoter;
+                        layer.close(temp);
+                    });
+                });
+            },
+            deposit: function (index) {
+                let tmp = table.list[index];
+                let html = "";
+                html += '<input type="text" class="form-control m-t-sm" id="depositValue" placeholder="充值金额(个),要减少填负数">';
+                html += '<input type="text" class="form-control m-t-sm" id="depositNote" placeholder="备注(必填)">';
+                html += '<input type="text" class="form-control m-t-sm" id="depositAddress" placeholder="代币地址，需要和后台的平台代币的地址一致">';
+                html += '<input type="number" class="form-control m-t-sm" id="depositType" placeholder="代币基本类型(1:eth,2:bch,3:eos,4:btc)">';
+                let temp = s.alertHtml("充值", html, '', function () {
+
+                    let depositValue = $('#depositValue').val();
+                    if(!(/^-?\d+(\.\d{1,2})?$/.test(depositValue))){
+                        s.alertError('充值金额需为数字');
+                        return;
+                    }
+                    let depositAddress = $('#depositAddress').val();
+                    let depositType = $('#depositType').val();
+                    // 正整数
+                    if(!(/^\d+$/.test(depositType))){
+                        s.alertError('类型需要为正整数');
+                        return;
+                    }
+                    let note = $("#depositNote").val();
+                    if (note.length < 1) {
+                        s.alertError("请输入备注");
+                        return;
+                    }
+                    let param = {uid : tmp.id, number: depositValue, currencyAddress: depositAddress, type : depositType, note : note};
+                    s.ajax(s.rootPath("/hostUser/deposit"), "POST", param, function () {
+                        s.alertSuccess("充值成功");
+                        layer.close(temp);
+                    });
+                });
+            }
+        },
+        filters: {
+            formatter: function (input) {
+                if (input == null) {
+                    return '-';
+                }
+                return dateFormat(input);
+            }
+        },
+        created: function () {
+            this.select(true);
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <div class="ibox top-co m-b-sm">
+                <div class="ibox-title">
+                    <h5>检索条件</h5>
+                </div>
+                <form id="form" onsubmit="return false;" class="form-inline">
+                    <div class="ibox-content form-container">
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 用户ID:
+                            <input type="number" id="uid" name="uid" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 代币地址:
+                            <input type="text" name="currencyAddress" class="form-control"/>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 类型:
+                            <select name="type" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">充值</option>
+                                <option value="2">提现</option>
+                                <option value="3">发红包</option>
+                                <option value="4">收红包</option>
+                                <option value="5">转账-转出</option>
+                                <option value="6">转账-收款</option>
+                                <option value="7">创建代币</option>
+                                <option value="8">创建EOS账户</option>
+                            </select>
+                        </label>
+                        <label class="form-group m-l-lg m-t-sm m-b-sm"> 状态:
+                            <select name="status" class="form-control">
+                                <option value="">不限</option>
+                                <option value="1">排队中</option>
+                                <option value="2">处理中</option>
+                                <option value="3">成功</option>
+                                <option value="4">失败</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="ibox-footer p-sm">
+                        <button type="submit" @click="select" class="btn btn-sm btn-success btn-outline"><i class="fa fa-search"></i> 检索</button>
+                        <button type="reset" class="btn btn-sm btn-default btn-outline"><i class="fa fa-undo"></i> 重置</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" :value="page.pageNumber" />
+                    <input type="hidden" name="pageSize" :value="page.pageSize" />
+                    <input type="hidden" name="order" :value="sorting.order" />
+                    <input type="hidden" name="sort" :value="sorting.sort" />
+                </form>
+            </div>
+
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                    <tr>
+                        <th colspan="100%">
+                            <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                            <!--<a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>-->
+                        </th>
+                    </tr>
+                    <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id" :class="{success : (item.status === 3), danger : (item.status === 4)}" >
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.user_id }}</td>
+                        <td>{{ item.income | toEther }}</td>
+                        <td>{{ item.outcome | toEther }}</td>
+                        <td>{{ item.current_balance | toEther }}</td>
+                        <td>{{ item.out_come_fee | toEther }}</td>
+                        <td>{{ item.refund | toEther }}</td>
+                        <td :title="item.related_address">
+                            {{ item.related_address | limitLength }}
+                            <template v-if="typeof(item.related_address) != 'undefined'">
+                                <button class="copy_btn btn btn-white btn-sm" :data-clipboard-text="item.related_address" ><i class="fa fa-copy"></i></button>
+                            </template>
+                        </td>
+                        <td :title="item.tx_hash" v-html="toUrl(item.tx_hash)"></td>
+                        <td>{{ item.status | statusValue }}</td>
+                        <td>{{ item.type | typeValue }}</td>
+                        <td>{{ item.create_time | formatter }}</td>
+                        <td>{{ item.update_time | formatter }}</td>
+                        <!--<td>-->
+                            <!--<a href="javascript:" v-if="permission.edit" @click="edit(index)" class="btn btn-white btn-xs"><i class="fa fa-pencil"></i> 编辑 </a>-->
+                            <!--<a href="javascript:" v-if="permission.del" @click="del(index)" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> 删除 </a>-->
+                        <!--</td>-->
+                    </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../js/bignumber.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/clipboard/clipboard.min.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            // permission: {
+            //     add : hasAuth("permission:insert"),
+            //     del : hasAuth("permission:delete"),
+            //     edit : hasAuth("permission:update")
+            // },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '账单ID', property: 'id', sortable : true },
+                { name : '用户ID', property: 'user_id', sortable : true },
+                { name : '收入', property: 'income', sortable : true },
+                { name : '支出', property: 'outcome', sortable : true },
+                { name : '交易后余额', property: 'current_balance', sortable : true },
+                { name : '提现手续费', property: 'out_come_fee', sortable : true },
+                { name : '退款', property: 'refund', sortable : true },
+                { name : '关联钱包地址', property: 'related_address', sortable : true },
+                { name : '交易Hash', property: 'tx_hash', sortable : true },
+                { name : '状态', property: 'status', sortable : true },
+                { name : '类型', property: 'type', sortable : true },
+                { name : '创建时间', property: 'create_time', sortable : true },
+                { name : '到账时间', property: 'update_time', sortable : true }
+            ]
+        },
+        methods: {
+            toUrl : function (input) {
+                if (input === "") {
+                    return ""
+                }
+                let url = "https://etherscan.io/tx/" + input;
+                return '<a href="' + url + '" target="_blank">' + s.limitLength(input, 10) + '</a>';
+            },
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 100;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/hostUser/bill"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result.list;
+                        table.page = result.page;
+
+                        new Clipboard('.copy_btn');
+                    });
+                });
+            }
+        },
+        filters: {
+            toEther : function (input) {
+                if (input === "") {
+                    return ""
+                }
+                return wei2etherNumber(input);
+            },
+            typeValue : function (input) {
+                switch (input) {
+                    case 1:
+                        return '充值';
+                    case 2:
+                        return '提现';
+                    case 3:
+                        return '发红包';
+                    case 4:
+                        return '收红包';
+                    case 5:
+                        return '转账-转出';
+                    case 6:
+                        return '转账-收款';
+                    case 7:
+                        return '创建代币';
+                    case 8:
+                        return '创建EOS账户';
+                    case 100:
+                        return "云矿账户支付";
+                    case 101:
+                        return "云矿账户提现";
+                    case 102:
+                        return "云矿商家收款";
+                    default:
+                        return '未知，请联系管理员';
+                }
+            },
+            statusValue: function(input) {
+                switch (input) {
+                    case 1:
+                        return '排队中';
+                    case 2:
+                        return '处理中';
+                    case 3:
+                        return '成功';
+                    case 4:
+                        return '失败';
+                    default:
+                        return '未知，请联系管理员';
+                }
+            },
+            limitLength : function (input) {
+                return s.limitLength(input, 10);
+            },
+            formatter: function (input) {
+                return dateFormat(input);
+            }
+        },
+        created: function () {
+            this.select();
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link rel="stylesheet" href="../../plugins/footable/footable.core.css" >
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <div id="table" class="animated fadeInDown">
+        <div>
+            <div class="alert alert-warning">
+                <a class="alert-link" href="javascript:;">注意点：</a><br/>
+                ❶最后一个奖项<span class="text-danger font-bold">强烈建议为未中奖</span>，因为当前面库存不足时，会导致最后一个奖项被抽中。<br/>
+                ❷前七项奖品的库存为0时，该项奖品的中奖几率也会变为0<br/>
+                ❸当类型为未中奖的时候，库存可以随便写。会默认置为0<br/>
+            </div>
+        </div>
+        <form class="form-horizontal m-t" onsubmit="return false;" id="form">
+            <div class="row">
+                <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                    <thead>
+                        <tr>
+                            <th colspan="100%">
+                                <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                                <!--<a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>-->
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>类型</th>
+                            <th>图片</th>
+                            <th>奖品名字</th>
+                            <th>库存(正整数)</th>
+                            <th>中奖概率(0~1的小数)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id">
+                            <td width="120">
+                                <select class="form-control type" :value="item.type">
+                                    <option value="1">未中奖</option>
+                                    <option value="2">奖品</option>
+                                </select>
+                            </td>
+                            <td width="60">
+                                <div class="ajax_upload_pic small" data-hiddenName="pic" data-fileName="file" data-url="/wheel/upload" :data-value="item.pic"></div>
+                            </td>
+                            <td>
+                                <input class="form-control name" type="text" :value="item.name" />
+                            </td>
+                            <td width="120">
+                                <input class="form-control stock" type="number" :value="item.stock" />
+                            </td>
+                            <td width="120">
+                                <input class="form-control rate" type="number" :value="item.rate" />
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr >
+                            <td colspan="100%">
+                                <a href="javascript:" @click="save()" title="保存" class="btn btn-success btn-outline btn-sm m-l-n-xxs"><i class="fa fa-save"></i> 保存</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../js/component/component-paging.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            permission: {
+                // updatePromoter : hasAuth("user:updatePromoter"),
+                // deposit : hasAuth("user:deposit"),
+            },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '奖品名字', property: 'name', sortable : true },
+                { name : '类型', property: 'type', sortable : false },
+                { name : '图片', property: 'pic', sortable : false },
+                { name : '库存', property: 'stock', sortable : true },
+                { name : '中奖概率', property: 'rate', sortable : true },
+            ]
+        },
+        methods: {
+            select : function () {
+                s.ajax(s.rootPath("/wheel/prize"), "GET", $('#form').serialize(), function(result) {
+                    table.list = result;
+                    s.delay(200, function () {
+                        s.initAjaxUploadPic();
+                    });
+                });
+            },
+            save : function () {
+                let datas = [];
+                let totalRate = 0;
+                for (let i = 1; i < 9; i ++ ) {
+                    let el = $("#id_" + i);
+                    let rate = parseFloat(el.find('.rate').val());
+                    if (rate < 0) {
+                        s.alertError("概率需为正数");
+                        return;
+                    }
+                    let type = parseInt(el.find('.type').val());
+                    let stock;
+                    if (type === 1) {
+                        stock = 0;
+                    } else {
+                        stock = parseInt(el.find('.stock').val());
+                        if (stock < 0) {
+                            s.alertError("库存需为正整数");
+                            return;
+                        }
+                    }
+                    totalRate = accAdd(totalRate, rate);
+                    datas.push({
+                        name: el.find('.name').val(),
+                        type: type,
+                        pic: el.find('[name=pic]').val(),
+                        stock: type === 1 ? 0 : stock,
+                        rate: rate
+                    })
+                }
+                if (totalRate !== 1) {
+                    s.alertError("概率之和必须为1");
+                    return;
+                }
+                s.ajax(s.rootPath('/wheel/prize'), "POST", {json : s.json2str(datas)}, function (result) {
+                    s.alertSuccess("保存成功");
+                });
+            }
+        },
+        filters: {
+            typeValue: function (input) {
+                if (input == null) {
+                    return '-';
+                }
+                if (input === 1) {
+                    return '未中奖'
+                } else {
+                    return '奖品';
+                }
+            }
+        },
+        created: function () {
+            this.select(true);
+        }
+    });
+</script>
+</html>

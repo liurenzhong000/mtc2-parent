@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <link rel="stylesheet" href="/backend/css/page/share.css" type="text/css" />
+    <title>分享</title>
+</head>
+<body style="background: url(https://files.m2c.work/activity/background.png) no-repeat; background-size: cover; background-color: #459bfd;">
+    <div class="wrapper" >
+        <img src="/backend/img/share/logo.png" class="logo" />
+        <img src="https://files.m2c.work/activity/banner.png" class="banner" />
+        <div class="info">
+            <p class="info-title">邀请码</p>
+            <p id="invite-code" class="info-content" value="asdfasdf">1219899601@qq.com</p>
+        </div>
+        <div class="info">
+            <p class="info-title">活动细则</p>
+            <p class="info-content">成功邀请一位好友下载MTC钱包，<br>并且成功借贷，即可瓜分10%利润。</p>
+        </div>
+        <a href="https://www.mtc.io/downphone.html" class="download-btn">立即下载</a>
+        <a href="javascript:" class="copy-btn" data-clipboard-target="#invite-code">复制邀请码</a>
+    </div>
+</body>
+<script src="/backend/js/jquery.min.js?v=2.1.4"></script>
+<script src="/backend/plugins/clipboard2/clipboard.min.js"></script>
+<script>
+    let url = window.location.href;
+    let start = url.lastIndexOf('/') + 1;
+    let tag = url.substr(start);
+    $('#invite-code').empty().append(tag);
+
+    $(function () {
+        // new ClipboardJS('.copy-btn');
+
+        let clipboard = new ClipboardJS('.copy-btn', {
+            text: function() {
+                return tag;
+            }
+        });
+
+        clipboard.on('success', function(e) {
+            alert('复制成功');
+            e.clearSelection();
+        });
+
+    });
+</script>
+</html>

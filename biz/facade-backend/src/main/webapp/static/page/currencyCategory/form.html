@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+</head>
+<body>
+<div class="col-sm-12">
+    <form class="form-horizontal m-t" id="form">
+        <input type="hidden" name="id"/>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">名称：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="name" required />
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+
+<script src="../../plugins/validate/jquery.validate.min.js"></script>
+<script src="../../plugins/validate/messages_zh.min.js"></script>
+
+<script>
+    function submit(completeCallback) {
+        let form = $("#form");
+        if(!form.valid()) {
+            return;
+        }
+
+        let id = $('input[name=id]').val();
+        let method = "PUT";
+        if (id) { // 更新
+            method = "POST";
+        }
+        s.ajax(s.rootPath('/currencyCategory'), method, {categoryJson : s.json2str(form.serializeObject())}, function (result) {
+            completeCallback(s.json2str(result));
+        });
+    }
+</script>
+</html>

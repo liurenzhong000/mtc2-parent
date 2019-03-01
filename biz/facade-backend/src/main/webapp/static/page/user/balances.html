@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+</head>
+<body>
+<div class="wrapper wrapper-content">
+    <form class="form-horizontal m-t" id="form">
+        <input type="hidden" name="id"/>
+    </form>
+    <div id="table" class="animated fadeInDown">
+        <div class="row">
+            <table class="footable table table-hover table-bordered white-bg m-b-sm">
+                <thead>
+                <tr>
+                    <th colspan="100%">
+                        <a href="javascript:" onclick="reloadPage()" title="刷新页面" class="btn btn-warning btn-outline btn-sm m-l-n-xxs"><i class="fa fa-refresh"></i> 刷新</a>
+                        <!--<a href="javascript:" v-if="permission.add" @click="add" class="btn btn-primary btn-outline btn-sm m-l-n-xxs"><i class="fa fa-plus"></i> 增加</a>-->
+                    </th>
+                </tr>
+                <tr is="component-table-header" :sorting="sorting" :header="header" v-on:select="select"></tr>
+                </thead>
+                <tbody>
+                <tr v-for="(item, index) in list" :key="item.id" :id="'id_' + item.id">
+                    <td>{{ item.currencyAddress }}</td>
+                    <td>{{ item.currencyShortName }}</td>
+                    <td>{{ item.currencyType | baseTypeStr }}</td>
+                    <td>{{ item.balance | toEther }}</td>
+                    <td>{{ item.freezingAmount | toEther }}</td>
+                </tr>
+                </tbody>
+                <tfoot is="component-paging" :page="page" v-on:select="select"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../js/bignumber.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../js/component/component-table-header.js"></script>
+
+<script src="../../plugins/validate/jquery.validate.min.js"></script>
+<script src="../../plugins/validate/messages_zh.min.js"></script>
+
+<script>
+    let table = new Vue({
+        el: '#table',
+        data: {
+            list: [],
+            // permission: {
+            //     add : hasAuth("permission:insert"),
+            //     del : hasAuth("permission:delete"),
+            //     edit : hasAuth("permission:update")
+            // },
+            sorting: {
+                order: '',
+                sort: ''
+            },
+            page : {},
+            header: [
+                { name : '代币地址', property: 'currencyAddress', sortable : false },
+                { name : '代币简称', property: 'currencyShortName', sortable : false },
+                { name : '代币类型', property: 'currencyType', sortable : false },
+                { name : '余额', property: 'balance', sortable : false },
+                { name : '冻结金额', property: 'freezingAmount', sortable : false }
+            ]
+        },
+        methods: {
+            select : function (needDelay) {
+                let delayTime = 0;
+                if (needDelay) { // 防止提交过快，导致vue obj的值还未改变到表单中
+                    delayTime = 700;
+                }
+                s.delay(delayTime, function () {
+                    s.ajax(s.rootPath("/hostUser/userBalance"), "GET", $('#form').serialize(), function(result) {
+                        table.list = result;
+                    });
+                });
+            }
+        },
+        filters: {
+            baseTypeStr : function (input) {
+                // 基链类型 1:eth, 2:bch
+                if (input === 1) {
+                    return 'ETH';
+                } else if (input === 2) {
+                    return 'BCH';
+                } else if (input === 3) {
+                    return 'EOS';
+                } else if (input === 4) {
+                    return 'BTC';
+                }
+                return '';
+            },
+            toEther : function (input) {
+                if (input === "") {
+                    return ""
+                }
+                return wei2etherNumber(input);
+            },
+            formatter: function (input) {
+                if (input == null) {
+                    return '-';
+                }
+                return dateFormat(input);
+            }
+        }
+        // ,
+        // created: function () {
+        //     this.select(true);
+        // }
+    });
+
+    $(function() {
+        table.select(true);
+    });
+
+    function submit(completeCallback) {
+        completeCallback(1);
+    }
+</script>
+</html>

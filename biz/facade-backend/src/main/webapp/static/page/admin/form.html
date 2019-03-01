@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+    <link href="../../plugins/select2/css/select2.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="col-sm-12">
+    <form class="form-horizontal m-t" id="form">
+        <input type="hidden" name="id"/>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">用户名：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="username" required minlength="4"/>
+            </div>
+        </div>
+        <div class="form-group" id="password-container" style="display: none;">
+            <label class="col-sm-3 control-label">密码：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="password" required minlength="6"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">手机号：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="phone" data-rule-isMobile />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">邮件地址：</label>
+            <div class="col-sm-8">
+                <input type="email" class="form-control" name="email"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">角色：</label>
+            <input type="hidden" id="roleId" />
+            <div class="col-sm-8" id="select_container">
+                <select class="select2 form-control" name="roleId" style="width: 350px; display: none;">
+                    <option v-for="(key, value) in list" :value="key">{{value}}</option>
+                </select>
+                <span class="help-block m-b-none"><i class="fa fa-info-circle"></i> 拥有该角色的所有权限</span>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../plugins/select2/js/select2.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+<script src="../../plugins/validate/jquery.validate.min.js"></script>
+<script src="../../plugins/validate/messages_zh.min.js"></script>
+
+<script>
+    let select_container = new Vue({
+        el : "#select_container",
+        data : {
+            list : {}
+        }
+    });
+
+    $(function () {
+        s.ajax(s.rootPath("/admin/allRole"), "GET", null, function (result) {
+            select_container.list = result;
+            s.delay(300, function () {
+                $('.select2').val($('#roleId').val()).select2({
+                    placeholder: '请选择角色',
+                    tags: "false",
+                    language: "zh-CN",
+                    tokenSeparators: [',', '_']
+                });
+            });
+        });
+
+        s.delay(150, function () {
+            let id = $('input[name=id]').val();
+            if (!id) { // 更新隐藏密码
+                $('#password-container').show();
+            } else {
+                $('input[name=username]').attr('disabled', 'disabled');
+            }
+        });
+    });
+
+    // 手机号码验证
+    jQuery.validator.addMethod("isMobile", function(value, element) {
+        var length = value.length;
+        var mobile = /^(13[0-9]{9})|(18[0-9]{9})|(14[0-9]{9})|(17[0-9]{9})|(15[0-9]{9})$/;
+        return this.optional(element) || (length == 11 && mobile.test(value));
+    }, "<i class=\"fa fa-times-circle\"></i> 请正确填写您的手机号码");
+
+    function submit(completeCallback) {
+        let form = $("#form");
+        if(!form.valid()) {
+            return;
+        }
+        if (!$('.select2').val()) {
+            alert("请选择角色!");
+            return;
+        }
+
+        let id = $('select[name=id]').val();
+        let method = "PUT";
+        if (id) { // 更新
+            method = "POST";
+        }
+        s.ajax(s.rootPath('/admin'), method, form.serializeObject(), function (result) {
+            completeCallback(s.json2str(result));
+        });
+    }
+</script>
+</html>

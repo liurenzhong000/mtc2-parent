@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="../../css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
+    <link href="../../css/animate.min.css" rel="stylesheet">
+    <link href="../../css/style.min.css?v=4.1.0" rel="stylesheet">
+</head>
+<body>
+<div class="col-sm-12">
+    <form class="form-horizontal m-t" onsubmit="return false;" id="form">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">文件：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="file" required style="margin-bottom: 10px;" />
+
+                <div id="ossfile">你的浏览器不支持flash,Silverlight或者HTML5！</div>
+                <div id="container">
+                    <a id="selectfiles" href="javascript:void(0);" class='btn btn-success btn-xs'>选择文件</a>
+                    <a id="postfiles" href="javascript:void(0);" class='btn btn-success btn-xs'>开始上传</a>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">跳转类型：</label>
+            <div class="col-sm-8">
+                <select name="type" onchange="changeType($(this))" class="form-control">
+                    <option value="1">网页</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" id="url-holder" style="display: none;">
+            <label class="col-sm-3 control-label">url：</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="url" required />
+                <span class="help-block m-b-none"><i class="fa fa-info-circle"></i> 点击后跳转的url</span>
+            </div>
+        </div>
+        <button type="submit" onclick="save()" class="btn btn-sm btn-success btn-outline col-sm-offset-3"><i class="fa fa-save"></i> 保存</button>
+    </form>
+</div>
+</body>
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+<script src="../../js/constants.js"></script>
+<script src="../../js/cqspy.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+
+<script src="../../plugins/validate/jquery.validate.min.js"></script>
+<script src="../../plugins/validate/messages_zh.min.js"></script>
+
+<script type="text/javascript" src="../../plugins/oss/lib/crypto1/crypto/crypto.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/crypto1/hmac/hmac.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/crypto1/sha1/sha1.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/base64.js"></script>
+<script type="text/javascript" src="../../plugins/oss/lib/plupload-2.1.2/js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../../plugins/oss/upload.js"></script>
+
+<script>
+    $(function() {
+        s.ajax(s.rootPath("/launchScreen"), "GET", null, function (result) {
+            $('input[name=file]').val(result.file);
+            let type = result.type;
+            $('select[name=type]').val(type);
+            if (type === "1") {
+                $('input[name=url]').val(result.url);
+                $("#url-holder").show();
+            }
+        })
+    });
+
+    function changeType($this) {
+        if ($this.val() === '1') {
+            $("#url-holder").show();
+        } else {
+            $("#url-holder").hide();
+        }
+    }
+
+    function save() {
+        let form = $("#form");
+        if(!form.valid()) {
+            return;
+        }
+        s.ajax(s.rootPath("/launchScreen"), "POST", $('#form').serialize(), function(result) {
+        });
+    }
+
+    g_dirname = "image/launchScreen";
+
+    uploader.callback = function (result) {
+        $('input[name=file]').val(result);
+    };
+</script>
+</html>
