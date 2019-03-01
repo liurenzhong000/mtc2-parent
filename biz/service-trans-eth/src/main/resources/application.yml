@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: service-trans-eth
+# 公网测试
+endpointUrl: 'https://mainnet.infura.io/v3/060da37455f743aeae35388515b790b6'
+#endpointUrl: 'http://47.74.146.41:7777'
+# 节点1外网
+#endpointUrl: 'http://47.74.179.117:7000'
+
+# 节点1
+#endpointUrl: 'http://172.21.131.72:7000'
+# 节点2
+#endpointUrl: 'http://172.21.131.95:7000'
+# 节点3
+#endpointUrl: 'http://172.21.50.90:7000'
+# 节点4
+#endpointUrl: 'http://172.21.50.91:7000'
+# 节点5
+#endpointUrl: 'http://172.21.50.92:7000'

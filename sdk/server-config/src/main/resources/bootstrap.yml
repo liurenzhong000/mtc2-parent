@@ -1,0 +1,49 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: server-config
+  cloud:
+    config:
+      server:
+        git:
+          # clone-on-start: true
+          uri: http://47.74.210.94/java/mtc2-config.git
+          search-paths: configs
+          username: hyp
+          password: hao5287317
+          basedir: config-repo/config-repo
+server:
+  port: 8889
+
+eureka:
+  client:
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-expiration-duration-in-seconds: 15
+    lease-renewal-interval-in-seconds: 5
+    prefer-ip-address: true
+#    instance-id: ${spring.application.name}:${random.int}
+    # 提供外网访问打开的，正式环境务必注释掉
+#    ip-address: 47.74.219.52
+---
+spring:
+  profiles: dev
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+---
+spring:
+  profiles: test
+eureka:
+  client:
+    service-url:
+      defaultZone: http://172.21.202.217:8761/eureka/
+---
+spring:
+  profiles: prod
+eureka:
+  client:
+    service-url:
+      defaultZone: http://47.74.219.52:8761/eureka/,http://47.74.216.37:8761/eureka/

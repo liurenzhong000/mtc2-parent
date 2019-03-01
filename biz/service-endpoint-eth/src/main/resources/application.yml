@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: service-endpoint-eth
+# 使用第几个节点
+endpoint.index: -1
