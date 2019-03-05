@@ -2,7 +2,7 @@
 
 APP_JAR_NAME=facade-bitcoin
 APP_JAR_PATH=./$APP_JAR_NAME.jar
-MEM=1024
+MEM=512
 
 case $1 in
     start)

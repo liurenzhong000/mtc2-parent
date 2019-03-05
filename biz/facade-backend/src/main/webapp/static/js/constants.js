@@ -11,6 +11,7 @@ const standardDeploy = [
     { name : 'FACADE-MARKET', total : 2},
     { name : 'FACADE-BACKEND', total : 2},
     { name : 'FACADE-USER', total : 2},
+    { name : 'FACADE-BITCOIN', total : 2},
     { name : 'SERVER-CONFIG', total : 1},
     { name : 'SERVER-REGISTER', total : 2},
     { name : 'SERVER-ZUUL', total : 2},

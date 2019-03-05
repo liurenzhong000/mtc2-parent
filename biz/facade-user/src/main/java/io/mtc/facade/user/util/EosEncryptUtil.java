@@ -10,6 +10,9 @@ import io.mtc.common.util.CodecUtil;
  */
 public class EosEncryptUtil {
 
+    // 密钥
+    private static final String secret = "mtc";
+
     /**
      * 请求加密
      * @return 加密后的签名字符串
@@ -18,6 +21,7 @@ public class EosEncryptUtil {
         StringBuilder stringBuilder = new StringBuilder(requestTimeMills);
         stringBuilder.append("&").append(accountName);
         stringBuilder.append("&").append(ownerKey);
+        stringBuilder.append("&").append(secret);
         stringBuilder.append("&").append(activeKey);
 
         String linkStr = stringBuilder.toString();

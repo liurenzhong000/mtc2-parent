@@ -154,7 +154,7 @@ public class NotificationService implements MsgHandler {
             }
             notification.setContent(messageUtil.getMessage(msgKey, transContentArgs, langCode));
             notificationRepository.save(notification);
-
+            log.info("转出方信息： {}", CommonUtil.toJson(notification));
             NotificationUtil.pushNotification(notification);
         }
         // 收币方是平台用户，要给他推送
@@ -174,7 +174,7 @@ public class NotificationService implements MsgHandler {
             String content = messageUtil.getMessage(MessageConstants.trans_to_success_content, transContentArgs, langCode);
             notification.setContent(content);
             notificationRepository.save(notification);
-
+            log.info("收款方信息： {}", CommonUtil.toJson(notification));
             NotificationUtil.pushNotification(notification);
         }
         return Action.CommitMessage;

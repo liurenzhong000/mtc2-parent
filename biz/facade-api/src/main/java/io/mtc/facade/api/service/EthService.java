@@ -55,6 +55,15 @@ public class EthService {
     }
 
     /**
+     * 获得钱包地址的语音
+     * @param walletAddress 钱包地址
+     * @return 与上相对应
+     */
+    public int getLanguage(String walletAddress) {
+        return (int) redisUtil.get(RedisKeys.PLATFORM_USER(walletAddress));
+    }
+
+    /**
      * 获取币种一览
      * @param type 基链类型(1:ETH[默认], 2:BTC, 3:EOS)
      * @return 币种一览

@@ -11,6 +11,7 @@ import io.mtc.facade.user.entity.EmailCodeRecord;
 import io.mtc.facade.user.repository.CodeRecordRepository;
 import io.mtc.facade.user.repository.EmailCodeRecordRepository;
 import io.mtc.facade.user.util.AliyunMailUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.util.Date;
  * @author Chinhin
  * 2018/7/23
  */
+@Slf4j
 @Service
 public class SendCodeService {
 
@@ -109,6 +111,7 @@ public class SendCodeService {
      */
     public Object emailSendCode(String email, int langCode) {
         if (StringUtil.isBlank(email) || !StringUtil.checkEmail(email)) {
+            log.info("邮箱地址验证失败{}", email);
             return ResultUtil.errorObj(MTCError.PARAMETER_INVALID);
         }
         String code;

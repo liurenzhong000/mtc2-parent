@@ -2,6 +2,7 @@ package io.mtc.facade.api.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import io.mtc.common.constants.Constants;
 import io.mtc.common.constants.MTCError;
 import io.mtc.common.redis.constants.RedisKeys;
 import io.mtc.common.redis.util.RedisUtil;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,6 +130,17 @@ public class TransactionController {
             Object hash = resultMap.get("hash");
             resultMap.put("txHash", hash);
             resultMap.remove("hash");
+
+            String currencyAddress = resultMap.getString("contractAddress");
+            // 代币的精度可能不是10的18次方，需要进行修正
+            if (!Constants.ETH_ADDRESS.equals(currencyAddress)) {
+                Integer balanceDecimals = redisUtil.get(RedisKeys.DECIMALS_TOKEN(currencyAddress), Integer.class);
+                if (balanceDecimals == null) {
+                    balanceDecimals = serviceEndpointEth.getBalanceDecimals(currencyAddress);
+                }
+                BigInteger tokenCounts = CommonUtil.balanceCorrect(resultMap.getBigInteger("tokenCounts"), balanceDecimals);
+                resultMap.put("tokenCounts", tokenCounts);
+            }
         }
         return detailMap;
     }

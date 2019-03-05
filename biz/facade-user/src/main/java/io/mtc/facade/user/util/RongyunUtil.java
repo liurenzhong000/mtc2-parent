@@ -18,7 +18,7 @@ public class RongyunUtil {
 
     private static final String APP_SECRET = "TORtlhEWbow";
 
-    private static final String URL = "***";
+    private static final String URL = "http://api-cn.ronghub.com/user/getToken.json";
 
     public static String getToken(User user) throws Exception {
         RongCloud rongCloud = RongCloud.getInstance(APP_KEY, APP_SECRET);

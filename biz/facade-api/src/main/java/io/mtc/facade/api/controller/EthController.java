@@ -134,6 +134,17 @@ public class EthController {
         return ResultUtil.successObj("Success");
     }
 
+    @ApiOperation(
+            value="获得钱包地址对应的语言"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="address", value = "钱包地址", required = true, dataType = "String"),
+    })
+    @PostMapping("/getLanguage")
+    public Object getLanguage(String address) {
+        return ResultUtil.successObj(ethService.getLanguage(address));
+    }
+
     @ApiOperation(value="调用以太坊通用接口", notes="对应老版本的 '/rpc/api'，目前只是为了前端走通转账流程，而交易记录会在后面开发出来")
     @ApiImplicitParam(name = "ethereumDTO", value = "请求实体", required = true, dataType = "EthereumRequest")
     @PostMapping("/ethApi")

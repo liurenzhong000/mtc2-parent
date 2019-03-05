@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.util.List;
+
 /**
  * User Dao
  *
@@ -22,6 +24,8 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long>,
     User findByPhoneAndLoginPassword(String phone, String loginPassword);
 
     User findByEmailAndLoginPassword(String email, String loginPassword);
+
+    List<User> findByIdIn(Long[] ids);
 
     /**
      * 每天重置用户的抽奖

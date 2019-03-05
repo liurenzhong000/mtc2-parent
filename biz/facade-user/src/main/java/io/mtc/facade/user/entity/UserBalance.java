@@ -15,12 +15,26 @@ import java.util.List;
  * @author Chinhin
  * 2018/7/23
  */
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(uniqueConstraints = {
         @UniqueConstraint(name = "balance_unique", columnNames = {"currencyAddress", "currencyType", "user_id"})
 })
 public class UserBalance extends BaseEntity {
+
+    public UserBalance() {
+    }
+
+    public UserBalance(Long id, Long version, Integer currencyType, String currencyAddress, BigInteger balance, BigInteger freezingAmount, Long userId) {
+        this.id = id;
+        this.version = version;
+        this.currencyType = currencyType;
+        this.currencyAddress = currencyAddress;
+        this.balance = balance;
+        this.freezingAmount = freezingAmount;
+        this.userId = userId;
+    }
 
     @Version
     protected Long version = 0L;
@@ -41,12 +55,19 @@ public class UserBalance extends BaseEntity {
     private BigInteger freezingAmount = BigInteger.ZERO;
 
     @JSONField(serialize = false)
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH}, optional = false)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH}, optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", columnDefinition = "bigint COMMENT '关联用户'")
     private User user;
 
     @JSONField(serialize = false)
     @OneToMany(mappedBy = "balance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Bill> bills;
+
+    @JSONField(serialize = false)
+    @OneToMany(mappedBy = "userBalance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserBalanceSample> userBalanceSamples;
+
+    @Transient
+    private Long userId;
 
 }

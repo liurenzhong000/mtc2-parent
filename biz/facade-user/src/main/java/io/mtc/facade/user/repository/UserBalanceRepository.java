@@ -2,7 +2,9 @@ package io.mtc.facade.user.repository;
 
 import io.mtc.facade.user.entity.User;
 import io.mtc.facade.user.entity.UserBalance;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -17,5 +19,8 @@ public interface UserBalanceRepository extends PagingAndSortingRepository<UserBa
     UserBalance findByUserAndCurrencyAddressAndCurrencyType(User user, String currencyAddress, Integer currencyType);
 
     List<UserBalance> findAllByUser(User user);
+
+    @Query(value = "select new UserBalance(ub.id,ub.version,ub.currencyType,ub.currencyAddress,ub.balance,ub.freezingAmount,u.id)from UserBalance as ub inner join User as u on u.id = ub.user.id where ub.currencyAddress=:currencyAddress and ub.currencyType=:currencyType")
+    List<UserBalance> findByCurrencyAddressAndCurrencyType(@Param("currencyAddress") String currencyAddress, @Param("currencyType") Integer currencyType);
 
 }

@@ -34,4 +34,7 @@ public interface ServiceEndpointEth {
     @GetMapping("/getNameByAddress/{address}")
     String getNameByAddress(@RequestParam("address") @PathVariable("address") String address);
 
+    @GetMapping("/balanceDecimals")
+    Integer getBalanceDecimals(String contractAddress);
+
 }

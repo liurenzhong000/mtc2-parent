@@ -56,6 +56,7 @@ public class HttpTokenFilter extends ZuulFilter {
     public boolean shouldFilter() {
         HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
         String encrypt = request.getHeader("encrypt");
+        log.info("请求 {}, 是否加密: {}", request.getRequestURI(), encrypt != null);
         return enableFilter
                 && PatternMatchUtils.simpleMatch("/user/*", request.getRequestURI())
                 && encrypt != null;
