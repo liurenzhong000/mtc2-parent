@@ -28,12 +28,12 @@ public class Producer {
      */
     public Producer(Constants.Tag tag) {
         Properties properties = new Properties();
-        properties.put(PropertyKeyConst.GROUP_ID, tag.getGroupId());
+        properties.put(PropertyKeyConst.ProducerId, tag.getProducerId());
         properties.put(PropertyKeyConst.AccessKey, Constants.AccessKey);
         properties.put(PropertyKeyConst.SecretKey, Constants.SecretKey);
         //设置发送超时时间，单位毫秒
         properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, "3000");
-        properties.put(PropertyKeyConst.NAMESRV_ADDR, Constants.getONSAddr());
+        properties.put(PropertyKeyConst.ONSAddr, Constants.getONSAddr());
         producer = ONSFactory.createProducer(properties);
         producer.start();
     }

@@ -18,7 +18,7 @@ public class Constants {
     @Setter
     private static String env = "prod";
     private static final String DEV_ONSAddr = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
-    private static final String PROD_ONSADDR = "http://post-cn-v0h10ywrq06.mqtt.aliyuncs.com";
+    private static final String PROD_ONSADDR = "http://ap-southeastaddr-internal.aliyun.com:8080/rocketmq/nsaddr4client-internal";
     private static final String TEST_ONSADDR = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
 
     public static String getONSAddr() {
