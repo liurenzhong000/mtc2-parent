@@ -16,7 +16,8 @@ import org.web3j.crypto.WalletFile;
  */
 public class EthCreateWalletUtil {
 
-    private static final String ETH_WALLET_PWD = "***";
+    //不能改
+    private static final String ETH_WALLET_PWD = "#@ce454#W";
 
     public static CreateWalletResultBean createWallet(User user) throws Exception {
         ECKeyPair ecKeyPair = Keys.createEcKeyPair();
@@ -24,8 +25,17 @@ public class EthCreateWalletUtil {
         String address = "0x" + walletFile.getAddress();
         String privateKey = ecKeyPair.getPrivateKey().toString(16);
         String encryptPrivateKey = AesCBC.getInstance().simpleEncrypt(privateKey,
-                AesCBC.makeKey(user.getId() + "***" + 1));
+                AesCBC.makeKey(user.getId() + ETH_WALLET_PWD + 1));
         return new CreateWalletResultBean(encryptPrivateKey, address);
+    }
+
+    public static void main(String[] args) throws Exception {
+        User user = new User();
+        user.setId(1L);
+        CreateWalletResultBean resultBean = createWallet(user);
+        System.out.println(resultBean.getAddress());
+        System.out.println(resultBean.getEncryptPrivateKey());
+        System.out.println(AesCBC.getInstance().simpleDecrypt(resultBean.getEncryptPrivateKey(), AesCBC.makeKey(user.getId() + ETH_WALLET_PWD + 1)));
     }
 
 }

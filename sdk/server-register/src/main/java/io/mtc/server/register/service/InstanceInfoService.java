@@ -5,6 +5,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContextHolder;
 import io.mtc.common.redis.constants.RedisKeys;
 import io.mtc.common.redis.util.RedisUtil;
+import io.mtc.common.sms.util.MxtSmsUtil;
 import io.mtc.common.sms.util.SmsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -65,7 +66,7 @@ public class InstanceInfoService {
             if ("prod".equals(applicationContext.getEnvironment().getActiveProfiles()[0])) {
                 if (upNum == 0) {
                     if ("SERVICE-ENDPOINT-ETH".equals(tempApp.getName())) {
-                        SmsUtil.simpleSend("8617623006930", "444444", 2);
+                        MxtSmsUtil.sendMsg("8618296799192", "SERVICE-ENDPOINT-ETH UPNUM IS 0");
                     }
                 }
             }

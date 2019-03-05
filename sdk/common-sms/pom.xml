@@ -23,6 +23,11 @@
             <artifactId>aliyun-java-sdk-dysmsapi</artifactId>
             <version>${aliyun.sms}</version>
         </dependency>
+        <dependency>
+            <groupId>io.mtc</groupId>
+            <artifactId>common-http</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

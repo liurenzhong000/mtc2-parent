@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class YunKuangApiUtil {
 
-    private static String AES_KEY = "***";
+    private static String AES_KEY = "XXX";//未知服务，剔除（20180304）
 
     public static boolean login(User user, String url) {
         Map<String, Object> body = new HashMap<>();

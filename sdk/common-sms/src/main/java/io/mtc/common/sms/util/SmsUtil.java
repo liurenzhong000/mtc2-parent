@@ -22,12 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 public class SmsUtil {
 
     private static final String regionId = "ap-southeast-1";
-    private static final String accessKeyId = "xxx";
-    private static final String accessKeySecret = "xxx";
-    private static final String signName = "Mesh信使";
+    private static final String accessKeyId = "LTAIQDLWQ1yGUcrS";
+    private static final String accessKeySecret = "mqUFcmwTpuhchzrsiUlpHK1dXu2SBY";
+    private static final String signName = "BHB-WALLET";
 
     public static void main(String[] args) {
-        simpleSend("8615123378233", "666666", 1);
+        simpleSend("8618296799192", "666666", 1);
     }
 
     /**
@@ -43,18 +43,18 @@ public class SmsUtil {
         if (phoneNum.startsWith("86")) {
             // 中文
             if (langCode == 2) {
-                templateCode = "SMS_152288360";
+                templateCode = "SMS_158943753";
                 // 英文
             } else {
-                templateCode = "SMS_152288366";
+                templateCode = "SMS_158943757";
             }
         } else {
             // 中文
             if (langCode == 2) {
-                templateCode = "SMS_152288370";
+                templateCode = "SMS_158943755";
                 // 英文
             } else {
-                templateCode = "SMS_152283492";
+                templateCode = "SMS_158948455";
             }
         }
         try {

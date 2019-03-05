@@ -60,9 +60,9 @@ spring:
   profiles: prod
   redis:
     port: 6379
-    host: r-t4nc3fdf2aeb4be4.redis.singapore.rds.aliyuncs.com
+    host: r-t4n38fc607d3a824.redis.singapore.rds.aliyuncs.com
     database: 1
-    password: Mtc07100810
+    password: ein3^%@k1542
     jedis:
       pool:
         max-wait: {Duration.ofMillis(60000)}
@@ -72,4 +72,4 @@ eureka:
   client:
     register-with-eureka: true
     service-url:
-      defaultZone: http://172.21.232.205:8761/eureka/, http://172.21.232.206:8761/eureka/
+      defaultZone: http://172.21.152.71:8761/eureka/,http://172.21.251.204:8761/eureka/

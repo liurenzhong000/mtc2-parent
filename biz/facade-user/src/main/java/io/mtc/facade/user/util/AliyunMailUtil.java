@@ -24,11 +24,11 @@ public class AliyunMailUtil {
     private static final String accessKeySecret = "mqUFcmwTpuhchzrsiUlpHK1dXu2SBY";
 
     // 控制台创建的发信地址
-    private static final String accountName = "xbtc@email.xbtc.cx";
+    private static final String accountName = "zcdcoin@email.zcdcoin.club";
     // 发信人昵称
     private static final String fromAlias = "BHB";
     // 控制台创建的标签
-    private static final String tagName = "xbtclabel";
+    private static final String tagName = "zcdcoinWallet";
 
     public static void sendMail(String target, String subject, String content) {
         // 如果是除杭州region外的其它region（如新加坡、澳洲Region），需要将下面的"cn-hangzhou"替换为"ap-southeast-1"、或"ap-southeast-2"。
@@ -69,7 +69,7 @@ public class AliyunMailUtil {
         stringBuilder.append(content);
         stringBuilder.append("</strong></div><div style=\"margin:0px 0px 20px 15px;border-top: 1px solid #eeeeee; font-size:12px;line-height:1.3em;\"></div>");
         stringBuilder.append("<div style=\"margin:0px 10px 20px 15px;color:#333333;font-size:12px;line-height:1.3em;\">");
-        stringBuilder.append("© 2018 mesh");
+        stringBuilder.append("© 2019 BHB-WALLET");
         stringBuilder.append("</div><br /></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table>");
         return stringBuilder.toString();
     }

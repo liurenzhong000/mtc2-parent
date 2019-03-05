@@ -14,9 +14,9 @@ import io.rong.models.user.UserModel;
  */
 public class RongyunUtil {
 
-    private static final String APP_KEY = "cpj2xarlcttsn";
+    private static final String APP_KEY = "6tnym1br6ppp7";
 
-    private static final String APP_SECRET = "YY5T9w9YZxdyTE";
+    private static final String APP_SECRET = "TORtlhEWbow";
 
     private static final String URL = "***";
 

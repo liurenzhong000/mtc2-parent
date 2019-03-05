@@ -13,7 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 public class EndpointUrlFactory {
 
     private static final String[] endpoints = new String[]{
-            "https://mainnet.infura.io/v3/060da37455f743aeae35388515b790b6"
+            "https://mainnet.infura.io/v3/9baf1d3c67464948a2ba8ccb7a760079", //正式服infura轻节点
+            "http://172.21.202.220:7777" //正式服完整节点1
 //            "http://172.17.112.63:7000", // 测试服节点1
 //            "http://172.21.131.72:7000", // 节点1
 //            "http://172.21.131.95:7000", // 节点2
@@ -23,8 +24,8 @@ public class EndpointUrlFactory {
     };
 
     private static final String[] ips = new String[] {
-            "127.0.0.1"
-//            "47.74.146.41"
+            "127.0.0.1",
+            "172.21.202.220"
 //            "39.106.178.73",
 //            "47.74.179.117",
 //            "47.74.154.21",
@@ -50,7 +51,7 @@ public class EndpointUrlFactory {
 //        "https://mainnet.infura.io/lyQuA5LyD17TUZSLaEHk"
         if (index == -1) {
 //            return "https://mainnet.infura.io/zJTHNnZMHBweTR0eHiSe";
-            return "https://mainnet.infura.io/v3/060da37455f743aeae35388515b790b6";
+            return "https://mainnet.infura.io/v3/060da37455f743aeae35388515b790b6";//测试服1
         }
         if (!logged) {
             logged = true;

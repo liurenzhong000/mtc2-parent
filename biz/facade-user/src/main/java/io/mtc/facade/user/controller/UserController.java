@@ -177,7 +177,7 @@ public class UserController {
             }
             user.setPromoter(promoter);
         } else {
-            user.setPromoter(UserDefaultUtil.defaultPromoter());
+//            user.setPromoter(UserDefaultUtil.defaultPromoter()); //去掉默认推荐（20190304）
         }
         user.setNick(UserDefaultUtil.getNick());
         user.setPhoto(UserDefaultUtil.getRandomHead());

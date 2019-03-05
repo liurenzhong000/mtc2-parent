@@ -1,6 +1,7 @@
 package io.mtc.facade.user.service;
 
 import io.mtc.common.constants.MTCError;
+import io.mtc.common.sms.util.MxtSmsUtil;
 import io.mtc.common.sms.util.SmsUtil;
 import io.mtc.common.util.DateUtil;
 import io.mtc.common.util.ResultUtil;
@@ -53,7 +54,7 @@ public class SendCodeService {
         // 生成验证码并发送短信
         if (sendRealVerifyCode) {
             code = StringUtil.randomNumber(6);
-            Object resultObj = SmsUtil.simpleSend(phoneNum, code, langCode);
+            Object resultObj = MxtSmsUtil.simpleSend(phoneNum, code, langCode);
             // 发送失败
             if (resultObj != null) {
                 return resultObj;
@@ -119,9 +120,9 @@ public class SendCodeService {
         }
 
         if (langCode == 2) {
-            AliyunMailUtil.sendMail(email, "Mesh信使 验证码", "您的验证码是" + code + "，1分钟内有效。");
+            AliyunMailUtil.sendMail(email, "BHB-WALLET 验证码", "您的验证码是" + code + "，1分钟内有效。");
         } else {
-            AliyunMailUtil.sendMail(email, "Mesh Verify Code", "Your verify code " + code + ", the code is valid within 1 minutes.");
+            AliyunMailUtil.sendMail(email, "BHB-WALLET Verify Code", "Your verify code " + code + ", the code is valid within 1 minutes.");
         }
 
         // 检查后增加或更新记录

@@ -3,3 +3,22 @@ spring:
     name: service-endpoint-eth
 # 使用第几个节点
 endpoint.index: -1
+
+---
+spring:
+  profiles: dev
+
+endpoint.index: -1
+
+
+---
+spring:
+  profiles: test
+
+endpoint.index: -1
+
+---
+spring:
+  profiles: prod
+
+endpoint.index: 1

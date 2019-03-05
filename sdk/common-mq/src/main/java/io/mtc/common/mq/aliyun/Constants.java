@@ -16,9 +16,9 @@ public class Constants {
 
     // prod，test
     @Setter
-    private static String env = "test";
+    private static String env = "prod";
     private static final String DEV_ONSAddr = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
-    private static final String PROD_ONSADDR = "http://xxx";
+    private static final String PROD_ONSADDR = "http://post-cn-v0h10ywrq06.mqtt.aliyuncs.com";
     private static final String TEST_ONSADDR = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
 
     public static String getONSAddr() {
@@ -33,16 +33,16 @@ public class Constants {
 
     public enum Tag {
         // 交易推送通知
-        ETH_TRANS_NOTIFI("PID_mtc_biz_trans", "CID_ETH_TRANS_NOTIFI", "GID_ETH_TRANS_NOTIFI")
+        ETH_TRANS_NOTIFI("PID_bhb_biz_trans", "CID_BHB_ETH_TRANS_NOTIFI", "GID_ETH_TRANS_NOTIFI")
         // 平台业务交易完成（充值、提现）
-        ,ETH_BIZ_TRANS_COMPLETE("PID_mtc_biz_trans", "CID_ETH_BIZ_TRANS_COMPLETE", "GID_ETH_BIZ_TRANS_COMPLETE")
+        ,ETH_BIZ_TRANS_COMPLETE("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_TRANS_COMPLETE", "GID_ETH_BIZ_TRANS_COMPLETE")
         // 平台业务交易发起（充值、提现）
-        ,ETH_BIZ_TRANS_PENDING("PID_mtc_biz_trans", "CID_ETH_BIZ_TRANS_PENDING", "GID_ETH_BIZ_TRANS_PENDING")
+        ,ETH_BIZ_TRANS_PENDING("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_TRANS_PENDING", "GID_ETH_BIZ_TRANS_PENDING")
         // 发币完成
-        ,ETH_BIZ_CREATION_COMPLETE("PID_mtc_biz_trans", "CID_ETH_BIZ_CREATION_COMPLETE", "GID_ETH_BIZ_CREATION_COMPLETE")
+        ,ETH_BIZ_CREATION_COMPLETE("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_CREATION_COMPLETE", "GID_ETH_BIZ_CREATION_COMPLETE")
         // 监控到有向平台托管用户的钱包地址充值
         ,ETH_BIZ_HOST_WALLET_TRANS("GID_ETH_BIZ_HOST_WALLET_TRANS", "GID_ETH_BIZ_HOST_WALLET_TRANS", "GID_ETH_BIZ_HOST_WALLET_TRANS")
-        ,ETH_BIZ_HOST_WALLET_TRANS_PROD("PID_mtc_biz_trans", "CID_ETH_BIZ_HOST_WALLET_TRANS_PROD", "GID_ETH_BIZ_HOST_WALLET_TRANS_PROD")
+        ,ETH_BIZ_HOST_WALLET_TRANS_PROD("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_HOST_WALLET_TRANS_PROD", "GID_ETH_BIZ_HOST_WALLET_TRANS_PROD")
         ;
 
         @Getter
@@ -61,7 +61,7 @@ public class Constants {
 
     // 需要与控制台一致
     public enum Topic {
-        MTC_BIZ_TRANS("mtc_biz_trans")
+        MTC_BIZ_TRANS("bhb_biz_trans")
         ;
 
         @Getter
