@@ -111,7 +111,7 @@ public class TransactionService implements MsgHandler {
         try {
             web3j = web3jPool.getConnection();
             EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(transInfo.getSignedTransactionData()).sendAsync().get();
-            if (transInfo.getTxType() == 3) {
+            if (transInfo.getTxType() == 3) {//发币
                 ethRedisUtil.setCreateContractInfo(ethSendTransaction.getTransactionHash(), transInfo.getTxId());
             } else {
                 // 打包失败

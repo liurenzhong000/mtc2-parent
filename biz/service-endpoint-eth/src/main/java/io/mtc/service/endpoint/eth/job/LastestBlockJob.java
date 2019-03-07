@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.mtc.common.quartz.support.JobSupport;
 import io.mtc.common.redis.constants.RedisKeys;
 import io.mtc.common.redis.util.RedisUtil;
+import io.mtc.service.endpoint.eth.util.EndpointUrlFactory;
 import io.mtc.service.endpoint.eth.util.GethUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
@@ -35,7 +36,7 @@ public class LastestBlockJob extends QuartzJobBean {
             redisUtil = context.getBean("redisUtil", RedisUtil.class);
         }
 
-        String result = GethUtil.request("https://mainnet.infura.io/DwsTJXLCQR2aMhi7QTLR", "eth_blockNumber");
+        String result = GethUtil.request(EndpointUrlFactory.getEndpointAtIndex(-1), "eth_blockNumber");
         if (result == null) {
             log.error("获取infura最新区块高度失败");
             return;

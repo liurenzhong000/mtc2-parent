@@ -48,7 +48,7 @@ public class DividendService {
         if (serBHBBalances == null || serBHBBalances.size() == 0) return;
         dividendContext.setUserBHBBalances(serBHBBalances);
         //  设置已存在的用户USDT账户
-        List<UserBalance> userUSDTBalances = userBalanceRepository.findByCurrencyAddressAndCurrencyType("USDT", 5);
+        List<UserBalance> userUSDTBalances = userBalanceRepository.findByCurrencyAddressAndCurrencyType("USDT", 4);
         dividendContext.setUserUSDTBalances(userUSDTBalances);
         //  设置所有参与分成的用户,并生成分成树形结构
         for (UserBalance item : serBHBBalances) {

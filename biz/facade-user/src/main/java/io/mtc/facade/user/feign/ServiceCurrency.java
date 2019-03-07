@@ -42,4 +42,7 @@ public interface ServiceCurrency {
                   @RequestParam(value = "order", required = false) String order,
                   @RequestParam(value = "sort", required = false) String sort);
 
+    @GetMapping("/currency/getWithdrawFee")
+    BigInteger getWithdrawFee(@RequestParam(value = "currencyAddress") String currencyAddress);
+
 }

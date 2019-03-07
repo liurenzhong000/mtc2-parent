@@ -165,7 +165,7 @@ public class DividendContext {
                 userUSDTBalance = new UserBalance();
                 userUSDTBalance.setBalance(dividendUSDT);
                 userUSDTBalance.setCurrencyAddress("USDT");
-                userUSDTBalance.setCurrencyType(5);
+                userUSDTBalance.setCurrencyType(4);
                 userUSDTBalance.setUser(dividendUser.getUser());
             } else {
                 userUSDTBalance.setBalance(userUSDTBalance.getBalance().add(dividendUSDT));

@@ -211,6 +211,20 @@ public class CurrencyController {
         BigDecimal etherPrice = eth.getPrice();
         return calcTokenNum(etherNumber, etherPrice, tokenPrice);
     }
+
+    /**
+     * 获取对应币种的提现手续费
+     * @param currencyAddress 币种地址
+     * @return 提现手续费
+     */
+    @Transactional(readOnly = true)
+    @GetMapping("/getWithdrawFee")
+    public BigInteger getWithdrawFee(String currencyAddress){
+        Currency token = currencyRepository.findByAddress(currencyAddress);
+        BigInteger fee = new BigInteger(token.getFee());
+        return fee;
+    }
+
     private static BigInteger calcTokenNum(BigInteger etherNumber, BigDecimal etherPrice, BigDecimal tokenPrice) {
         BigInteger tempTokenNum = new BigDecimal(etherNumber).multiply(etherPrice).divide(tokenPrice, RoundingMode.UP).toBigInteger();
         BigDecimal tokenNum = new BigDecimal(tempTokenNum).divide(new BigDecimal(Constants.CURRENCY_UNIT), RoundingMode.UP);

@@ -155,9 +155,9 @@ public class FundController {
     public Object withdraw(@RequestHeader Long uid, String currencyAddress, @RequestParam(defaultValue = "1") Integer currencyType, String walletAddress,
                            String amount, String fundPassword, Boolean isValidByPhone, String validCode) {
         // 非正式环境不能提现
-//        if (!applicationContext.getEnvironment().getActiveProfiles()[0].equals("prod")) {
-//            return ResultUtil.error("非正式环境不能提现");
-//        }
+        if (!applicationContext.getEnvironment().getActiveProfiles()[0].equals("prod")) {
+            return ResultUtil.error("非正式环境不能提现");
+        }
         return fundService.withdraw(uid, currencyAddress, currencyType, walletAddress, amount, fundPassword, isValidByPhone, validCode);
     }
 

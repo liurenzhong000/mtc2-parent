@@ -40,7 +40,8 @@ public class UserBalanceSampleService {
         if (bhbInvestmentDividendEnabled == false) return;
 
         try {
-            List<UserBalance> userBalances = userBalanceRepository.findByCurrencyAddressAndCurrencyType(DividendConstant.BHB_ADDRESS, 5);
+            List<UserBalance> userBalances = userBalanceRepository.findByCurrencyAddressAndCurrencyType(DividendConstant.BHB_ADDRESS, 1);//修改 5 -> 1 (20190306)
+            logger.info("BHB定时任务扫描 - userBalances={}", userBalances.size());
             List<UserBalanceSample> userBalanceSamples = new ArrayList<>();
             userBalances.forEach(item -> {
                 UserBalanceSample userBalanceSample = new UserBalanceSample(item.getBalance(), item.getFreezingAmount(), item);

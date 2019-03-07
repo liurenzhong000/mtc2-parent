@@ -316,7 +316,8 @@ public class FundService implements MsgHandler {
      */
     private BigInteger getWithDrawFeeOfCurrency(String currencyAddress, Integer currencyType) {
         if (currencyType == 1) {
-            return getEthWithdrawFee(currencyAddress);
+//            return getEthWithdrawFee(currencyAddress);
+            return getEthWithdrawFeeFixation(currencyAddress);
         // 比特币
         } else if (currencyType == 4) {
             return CommonUtil.btc2wei(io.mtc.common.constants.Constants.BTC_WITHDRAW_FEE);
@@ -325,6 +326,7 @@ public class FundService implements MsgHandler {
         }
     }
 
+    //获取eth币系的提现手续费
     private BigInteger getEthWithdrawFee(String currencyAddress) {
         BigInteger fee = redisUtil.get(RedisKeys.WITHDRAW_FEE(currencyAddress), BigInteger.class);
         if (fee == null) {
@@ -333,6 +335,16 @@ public class FundService implements MsgHandler {
             // 需要的手续费金额
             BigInteger total = useGasPrice.multiply(TransactionConstants.GAS_AMOUNT);
             fee = serviceCurrency.ether2currency(currencyAddress, total);
+            redisUtil.set(RedisKeys.WITHDRAW_FEE(currencyAddress), fee, 30);
+        }
+        return fee;
+    }
+
+    //根据后台的设置来计算需要的手续费
+    private BigInteger getEthWithdrawFeeFixation(String currencyAddress) {
+        BigInteger fee = redisUtil.get(RedisKeys.WITHDRAW_FEE(currencyAddress), BigInteger.class);
+        if (fee == null) {
+            fee = serviceCurrency.getWithdrawFee(currencyAddress);
             redisUtil.set(RedisKeys.WITHDRAW_FEE(currencyAddress), fee, 30);
         }
         return fee;

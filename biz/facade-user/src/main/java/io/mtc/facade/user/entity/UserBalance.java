@@ -42,7 +42,7 @@ public class UserBalance extends BaseEntity {
     @Column(columnDefinition = "varchar(100) COMMENT '托管钱包地址(暂时都是平台的同一个，后期扩展备用)'", nullable = false)
     private String walletAddress;
 
-    @Column(columnDefinition = "int COMMENT '代币基链类型'")
+    @Column(columnDefinition = "int COMMENT '代币基链类型' 基链类型 1:eth, 2:bch, 3:eos，4:btc")
     private Integer currencyType = 1;
 
     @Column(columnDefinition = "varchar(100) COMMENT '代币地址'", nullable = false)
