@@ -6,8 +6,8 @@
 
 let accessid = 'LTAIQDLWQ1yGUcrS';
 let accesskey = 'mqUFcmwTpuhchzrsiUlpHK1dXu2SBY';
-let host = 'https://wallet-bhb.oss-cn-shenzhen.aliyuncs.com';
-let displayhost = 'https://wallet-bhb.oss-cn-shenzhen.aliyuncs.com';
+let host = 'https://zcd-wallet.oss-ap-southeast-1.aliyuncs.com';
+let displayhost = 'https://zcd-wallet.oss-ap-southeast-1.aliyuncs.com';
 
 let g_dirname = 'image/currency';
 let g_object_name = '';

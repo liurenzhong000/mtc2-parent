@@ -29,7 +29,7 @@ public class TransactionUtil {
             String input = transaction.getInput();
 
             String methodSha3 = input.substring(0, 10);
-            // 不是交易的记录
+            // 不是erc20交易的记录
             if (!"0xa9059cbb".equals(methodSha3)) {
                 record.setHash(null);
                 return record;

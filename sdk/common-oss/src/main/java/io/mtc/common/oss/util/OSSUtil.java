@@ -18,10 +18,10 @@ import java.util.regex.Pattern;
  */
 public class OSSUtil {
 
-    private static final String endpoint = "oss-cn-shenzhen.aliyuncs.com";
+    private static final String endpoint = "oss-ap-southeast-1.aliyuncs.com";
     private static final String accessKeyId = "LTAIQDLWQ1yGUcrS";
     private static final String accessKeySecret = "mqUFcmwTpuhchzrsiUlpHK1dXu2SBY";
-    private static final String bucketName = "wallet-bhb";
+    private static final String bucketName = "zcd-wallet";
 
     public static String upload(String name, File file) {
         OSSClient ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);

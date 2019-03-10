@@ -1,4 +1,7 @@
 package io.mtc.facade.user.service;
+import io.mtc.facade.user.constants.PlatformTransferStatus;
+import java.util.Date;
+import io.mtc.facade.user.constants.PlatformTransferType;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -18,20 +21,22 @@ import io.mtc.common.redis.constants.RedisKeys;
 import io.mtc.common.redis.util.RedisUtil;
 import io.mtc.common.util.*;
 import io.mtc.common.web3j.util.MeshTransactionData;
+import io.mtc.facade.user.bean.CurrencyBean;
 import io.mtc.facade.user.constants.BillStatus;
 import io.mtc.facade.user.constants.BillType;
 import io.mtc.facade.user.entity.Bill;
+import io.mtc.facade.user.entity.PlatformTransfer;
 import io.mtc.facade.user.entity.User;
 import io.mtc.facade.user.entity.UserBalance;
 import io.mtc.facade.user.feign.FacadeBitcoin;
 import io.mtc.facade.user.feign.ServiceCurrency;
 import io.mtc.facade.user.feign.ServiceEndpointEth;
 import io.mtc.facade.user.repository.BillRepository;
+import io.mtc.facade.user.repository.PlatformTransferRepository;
 import io.mtc.facade.user.repository.UserBalanceRepository;
 import io.mtc.facade.user.repository.UserRepository;
 import io.mtc.facade.user.util.PackageUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.bitcoinj.core.Coin;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -40,10 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 资金service
@@ -86,6 +89,15 @@ public class FundService implements MsgHandler {
     @Value("${deposit-password}")
     private String keyStorePassword;
 
+    @Value("${fee-address}")
+    private String feeAddress;
+
+    @Value("${fee-path}")
+    private String feeKeyStorePath;
+
+    @Value("${fee-password}")
+    private String feeKeyStorePassword;
+
     @Resource
     private UserService userService;
 
@@ -100,6 +112,12 @@ public class FundService implements MsgHandler {
 
     @Resource
     private FacadeBitcoin facadeBitcoin;
+
+    @Resource
+    private PlatformTransferRepository platformTransferRepository;
+
+    @Resource
+    private PlatformTransferService platformTransferService;
 
     /**
      * 获取单个代币的托管账户的余额
@@ -296,6 +314,9 @@ public class FundService implements MsgHandler {
             depositWithdrawService.completeDeposit(transInfo);
         } else if (BillType.WITHDRAW.getKey().equals(transInfo.getTxType())) { // 提现
             depositWithdrawService.completeWithdraw(transInfo);
+        } else if (transInfo.getTxType().equals(EthTransObj.TxType.FEE_TO.ordinal())) {//转入手续费
+            //更新平台记录状态
+            platformTransferService.completeFeeToUser(transInfo);
         }
         return Action.CommitMessage;
     }
@@ -726,6 +747,103 @@ public class FundService implements MsgHandler {
         } finally {
             redisUtil.delete(RedisKeys.PENDING_WITHDRAW_PROCESS);
         }
+    }
+
+    /***
+     * 给本地托管用户转入eth手续费
+     /**
+     * 1.从数据库中获取支持托管的币种
+     * 2.从用户托管钱包中获取所有托管用户的eth钱包汇总
+     * 3.循环遍历钱包地址，查询支持的币种的余额，如果达到汇总阈值，累计计算手续费
+     * 4.判断地址的eth余额和需要的手续费进行对比，如果不足，计算需要转入的手续费
+     * 5.打包交易，发送mq消息，给到service-endpoint-eth进行打包进行处理
+     * 6.生成平台内转账记录
+     */
+    public void ethFeeToHostUser() {
+        //获取支持托管的币种
+        JSONArray hostEnableCurrencyArray = getCurrencyList();
+        if (hostEnableCurrencyArray == null) {
+            log.warn("给本地托管用户转入eth手续费 job - 未从redis中获取到支持的币种数据");
+            return;
+        }
+        List<CurrencyBean> currencyList = hostEnableCurrencyArray
+                .stream()
+                .map(obj -> JSON.toJavaObject(((JSONObject) obj), CurrencyBean.class))
+                .collect(Collectors.toList());
+
+        //从redis中获取获取用户托管钱包集合
+        Map<String, Long> hostUserWalletMap = redisUtil.hget(RedisKeys.ETH_HOST_WALLET_ADDRESS);
+        if (hostUserWalletMap == null) {
+            log.warn("给本地托管用户转入eth手续费 job - 未从redis中获取到本地托管用户数据");
+            return;
+        }
+        Set<String> walletAddressSet = hostUserWalletMap.keySet();
+
+        for (String walletAddress : walletAddressSet) {
+            BigInteger needFee = BigInteger.ZERO; //当前用户所需的总手续费
+            //获取地址的ETH余额
+            BigInteger ethBalance = serviceEndpointEth.balance(walletAddress, io.mtc.common.constants.Constants.ETH_ADDRESS);
+            for (CurrencyBean currencyBean : currencyList) {
+                BigInteger tokenBalance = serviceEndpointEth.balance(walletAddress, currencyBean.getAddress());
+                BigInteger outQtyToMainAddress = new BigInteger(currencyBean.getOutQtyToMainAddress());
+                if (tokenBalance.compareTo(outQtyToMainAddress) > 0) {
+                    BigInteger gasPrice = serviceEndpointEth.gasPrice();
+                    needFee = needFee.add(TransactionConstants.getUseGasPrice(gasPrice).multiply(TransactionConstants.GAS_AMOUNT));
+                }
+            }
+            needFee = ethBalance.subtract(needFee); // 剩余eth-需要的eth = 要转入的eth
+
+            //需不需要转入eth
+            if (needFee.compareTo(BigInteger.ZERO) > 0) {
+                BigInteger[] gasPriceAndNonce = serviceEndpointEth.getGasPriceAndNonce(feeAddress);
+                String signedTransactionData = PackageUtil.packageEther(gasPriceAndNonce, needFee,
+                        walletAddress, feeKeyStorePath, feeKeyStorePassword);
+                MeshTransactionData transactionData = MeshTransactionData.from(signedTransactionData);
+
+                PlatformTransfer platformTransfer = new PlatformTransfer();
+                platformTransfer.setType(PlatformTransferType.FEE);
+                platformTransfer.setStatus(PlatformTransferStatus.PACKAGE);
+                platformTransfer.setCurrencyAddress(io.mtc.common.constants.Constants.ETH_ADDRESS);
+                platformTransfer.setFromAddress(feeAddress);
+                platformTransfer.setToAddress(walletAddress);
+                platformTransfer.setQty(needFee);
+//                platformTransfer.setGasPrice(new BigInteger());
+//                platformTransfer.setGasLimit(new BigInteger());
+                platformTransfer.setJobExpireDate(DateUtil.plusSeconds(new Date(), 30 * 60));
+
+                // 签名失败
+                if (transactionData.txHash == null) {
+                    //平台转账记录
+                    platformTransfer.setStatus(PlatformTransferStatus.FAIL);
+                    platformTransferRepository.save(platformTransfer);
+                    log.error("给本地托管用户转入eth手续费 job - 签名失败 - walletAddress={}", walletAddressSet);
+                    continue;
+                }
+                platformTransferRepository.save(platformTransfer);
+
+                // 打包请求,发送MQ消息到service-endpoint-eth进行处理
+                EthTransObj request = new EthTransObj();
+                request.setSignedTransactionData(signedTransactionData);
+                // 类型：平台转入手续费
+                request.setTxType(EthTransObj.TxType.FEE_TO.ordinal());
+                request.setTxId(platformTransfer.getId());
+                request.setCurrencyAddress(io.mtc.common.constants.Constants.ETH_ADDRESS);
+
+                boolean sendResult = producer.send(
+                        Constants.Topic.MTC_BIZ_TRANS,
+                        Constants.Tag.ETH_BIZ_TRANS_PENDING,
+                        request,
+                        Constants.Tag.ETH_BIZ_TRANS_PENDING.name() + platformTransfer.getId());
+
+                if (sendResult) {
+                    platformTransfer.setStatus(PlatformTransferStatus.SEND);
+                } else {
+                    platformTransfer.setStatus(PlatformTransferStatus.FAIL);
+                }
+                platformTransferRepository.save(platformTransfer);
+            }
+        }
+
     }
 
 }

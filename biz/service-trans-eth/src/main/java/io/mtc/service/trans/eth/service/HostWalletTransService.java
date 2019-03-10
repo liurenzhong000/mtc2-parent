@@ -1,6 +1,7 @@
 package io.mtc.service.trans.eth.service;
 
 import io.mtc.common.dto.EthHostWalletAddressTrans;
+import io.mtc.common.dto.EthTransObj;
 import io.mtc.common.dto.TransactionStatusEnum;
 import io.mtc.common.mongo.dto.TransactionRecord;
 import io.mtc.common.mq.aliyun.Constants;
@@ -39,6 +40,12 @@ public class HostWalletTransService {
             return;
         }
         if (record.getStatus() != TransactionStatusEnum.Success.getValue()) {
+            return;
+        }
+
+        //如果是站内转入手续费的业务（不属于充值）
+        if (record.getTxType().equals(EthTransObj.TxType.FEE_TO.ordinal())) {
+            log.info("如果是站内转入手续费的业务（不属于充值） return");
             return;
         }
 

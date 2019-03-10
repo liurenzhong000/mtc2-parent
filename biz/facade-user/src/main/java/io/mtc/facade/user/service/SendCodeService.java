@@ -123,9 +123,9 @@ public class SendCodeService {
         }
 
         if (langCode == 2) {
-            AliyunMailUtil.sendMail(email, "BHB-WALLET 验证码", "您的验证码是" + code + "，1分钟内有效。");
+            AliyunMailUtil.sendMail(email, "ZCD-WALLET 验证码", "您的验证码是" + code + "，1分钟内有效。");
         } else {
-            AliyunMailUtil.sendMail(email, "BHB-WALLET Verify Code", "Your verify code " + code + ", the code is valid within 1 minutes.");
+            AliyunMailUtil.sendMail(email, "ZCD-WALLET Verify Code", "Your verify code " + code + ", the code is valid within 1 minutes.");
         }
 
         // 检查后增加或更新记录

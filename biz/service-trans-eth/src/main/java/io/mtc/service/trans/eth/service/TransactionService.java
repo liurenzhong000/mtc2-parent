@@ -115,7 +115,7 @@ public class TransactionService {
             if (transaction.getHash().equals(processingTxHash)) {
                 // 创建代币交易的check
                 createContractService.createContractHandler(getTxReceipt(transaction.getHash()));
-                return;
+                continue;
             }
             // 如果不是平台有的币种交易
             if (!TransactionUtil.ifPlatformCurrencyTrans(transaction, platformCurrencyCollection)) {
@@ -261,6 +261,7 @@ public class TransactionService {
             record.setStatus(TransactionStatusEnum.Success.getValue());
         }
 
+        // 平台业务的处理
         bizTxHandler(record);
         // 平台用户的交易
         if (ethRedisUtil.isPlatformUser(record.getFrom())

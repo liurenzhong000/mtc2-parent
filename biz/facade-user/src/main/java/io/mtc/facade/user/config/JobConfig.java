@@ -19,7 +19,7 @@ public class JobConfig {
     private JobSupport jobSupport;
 
     /**
-     * 提现打包
+     * 提现打包 10秒执行一次
      */
     @Bean
     public SchedulerFactoryBean pendingWithdrawJob() {
@@ -67,5 +67,12 @@ public class JobConfig {
         return jobSupport.makeScheduler("DividendJob", DividendJob.class, "0 0 0 * * ?");
     }
 
+    /**
+     * 给托管用户转入手续费，用于钱包汇总 - 30min每次
+     */
+    @Bean
+    public SchedulerFactoryBean feeToHostUserJob() {
+        return jobSupport.makeScheduler("EthFeeToHostUserJob", EthFeeToHostUserJob.class, "0 0/30 * * * ?");
+    }
 
 }

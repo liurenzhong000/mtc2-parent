@@ -34,9 +34,9 @@ public class Constants {
     public enum Tag {
         // 交易推送通知
         ETH_TRANS_NOTIFI("PID_bhb_biz_trans", "CID_BHB_ETH_TRANS_NOTIFI", "GID_ETH_TRANS_NOTIFI")
-        // 平台业务交易完成（充值、提现）
+        // 平台业务交易完成（充值、提现、转入手续费）
         ,ETH_BIZ_TRANS_COMPLETE("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_TRANS_COMPLETE", "GID_ETH_BIZ_TRANS_COMPLETE")
-        // 平台业务交易发起（充值、提现）
+        // 平台业务交易发起（充值、提现、转入手续费）
         ,ETH_BIZ_TRANS_PENDING("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_TRANS_PENDING", "GID_ETH_BIZ_TRANS_PENDING")
         // 发币完成
         ,ETH_BIZ_CREATION_COMPLETE("PID_bhb_biz_trans", "CID_BHB_ETH_BIZ_CREATION_COMPLETE", "GID_ETH_BIZ_CREATION_COMPLETE")

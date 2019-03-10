@@ -97,7 +97,9 @@ public class TransactionRecord implements Serializable {
     /** 创建时间 */
     private Long createTime;
 
-    /** 交易类型: 1:充值，2:提现 其他为非平台交易业务 **/
+    /** 交易类型: 1:充值，2:提现 3.发币 4.转入手续费 其他为非平台交易业务
+     * @see io.mtc.common.dto.EthTransObj.TxType
+     * **/
     private Integer txType = 0;
     /** 对应txType的交易id **/
     private Long txId;

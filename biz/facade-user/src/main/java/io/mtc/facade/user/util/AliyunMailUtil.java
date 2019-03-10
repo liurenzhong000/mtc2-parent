@@ -26,7 +26,7 @@ public class AliyunMailUtil {
     // 控制台创建的发信地址
     private static final String accountName = "zcdcoin@email.zcdcoin.club";
     // 发信人昵称
-    private static final String fromAlias = "BHB";
+    private static final String fromAlias = "ZCD";
     // 控制台创建的标签
     private static final String tagName = "zcdcoinWallet";
 
@@ -69,7 +69,7 @@ public class AliyunMailUtil {
         stringBuilder.append(content);
         stringBuilder.append("</strong></div><div style=\"margin:0px 0px 20px 15px;border-top: 1px solid #eeeeee; font-size:12px;line-height:1.3em;\"></div>");
         stringBuilder.append("<div style=\"margin:0px 10px 20px 15px;color:#333333;font-size:12px;line-height:1.3em;\">");
-        stringBuilder.append("© 2019 BHB-WALLET");
+        stringBuilder.append("© 2019 ZCD-WALLET");
         stringBuilder.append("</div><br /></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table>");
         return stringBuilder.toString();
     }

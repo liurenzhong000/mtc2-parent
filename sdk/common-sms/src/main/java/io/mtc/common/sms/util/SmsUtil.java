@@ -24,7 +24,7 @@ public class SmsUtil {
     private static final String regionId = "ap-southeast-1";
     private static final String accessKeyId = "LTAIQDLWQ1yGUcrS";
     private static final String accessKeySecret = "mqUFcmwTpuhchzrsiUlpHK1dXu2SBY";
-    private static final String signName = "BHB-WALLET";
+    private static final String signName = "ZCD-WALLET";
 
     public static void main(String[] args) {
         simpleSend("8618296799192", "666666", 1);

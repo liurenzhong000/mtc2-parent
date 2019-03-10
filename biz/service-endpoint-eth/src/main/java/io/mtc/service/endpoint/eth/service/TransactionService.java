@@ -111,7 +111,7 @@ public class TransactionService implements MsgHandler {
         try {
             web3j = web3jPool.getConnection();
             EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(transInfo.getSignedTransactionData()).sendAsync().get();
-            if (transInfo.getTxType() == 3) {//发币
+            if (transInfo.getTxType() == EthTransObj.TxType.CREATE_CONTRACT.ordinal()) {//发币
                 ethRedisUtil.setCreateContractInfo(ethSendTransaction.getTransactionHash(), transInfo.getTxId());
             } else {
                 // 打包失败
@@ -141,7 +141,7 @@ public class TransactionService implements MsgHandler {
             EthTransObj request = new EthTransObj();
             request.setTxType(txType);
             request.setTxId(txId);
-            request.setStatus(2);
+            request.setStatus(EthTransObj.Status.FAIL.ordinal());
             producer.send(io.mtc.common.mq.aliyun.Constants.Topic.MTC_BIZ_TRANS,
                     io.mtc.common.mq.aliyun.Constants.Tag.ETH_BIZ_TRANS_COMPLETE,
                     request,

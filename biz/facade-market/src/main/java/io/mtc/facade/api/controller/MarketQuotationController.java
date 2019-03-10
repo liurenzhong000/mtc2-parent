@@ -35,7 +35,7 @@ public class MarketQuotationController {
 
 
     private static final String default_market = "bibox";//"bitmex,okex,binance,huobipro,lhang,hitbtc,zb,upbit,bibox,jex,bitfinex,bithumb,digifinex,quoine,bit-z,coinbase-pro,coinw,kraken,bitstamp,zaif";
-    private static  final String default_symbol_name = "mesh-network,ethereum,bitcoin-cash";
+    private static  final String default_symbol_name = "ethereum";
 
 
     @Value("${api.blockcc.url}")

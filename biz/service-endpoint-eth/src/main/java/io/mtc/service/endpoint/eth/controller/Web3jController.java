@@ -5,10 +5,12 @@ import io.mtc.service.endpoint.eth.util.Web3jPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.*;
 
 import javax.annotation.Resource;
@@ -88,6 +90,29 @@ public class Web3jController {
             web3j = web3JPool.getConnection();
             EthGasPrice gasPrice = web3j.ethGasPrice().send();
             return gasPrice.getGasPrice();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (web3j != null) {
+                web3JPool.close(web3j);
+            }
+        }
+    }
+
+    /**
+     * 通过Transaction来预估gasLimit
+     */
+    @GetMapping("/getGasLimit")
+    public BigInteger gasLimit(@RequestBody Transaction transaction) {
+        Web3j web3j = null;
+        try {
+            web3j = web3JPool.getConnection();
+            EthEstimateGas ethEstimateGas = web3j.ethEstimateGas(transaction).send();
+            if (ethEstimateGas.hasError()){
+                throw new RuntimeException(ethEstimateGas.getError().getMessage());
+            }
+            return ethEstimateGas.getAmountUsed();
         } catch (Exception e) {
             e.printStackTrace();
             return null;

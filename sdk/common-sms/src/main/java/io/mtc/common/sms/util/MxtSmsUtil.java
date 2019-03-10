@@ -22,7 +22,7 @@ public class MxtSmsUtil {
     static final String ACCOUNT_INTERNATIONAL ="MXT800692";
     static final String PWD_INTERNATIONAL = "Mxt800692";
 
-    static final String MSG_TAG = "【BHB】";
+    static final String MSG_TAG = "【ZCD】";
     static final String BASE_URL = "http://116.62.212.142/msg/HttpSendSM";
 
     /**

@@ -32,7 +32,7 @@ public class Constants {
     public static final String EOS_ADDRESS = "EOS";
 
     /** 阿里云oss的全路径 */
-    public static final String ALI_OSS_URI = "https://wallet-bhb.oss-cn-shenzhen.aliyuncs.com";
+    public static final String ALI_OSS_URI = "https://zcd-wallet.oss-ap-southeast-1.aliyuncs.com";
 
     /** 代币计算最小精度：红包、手续费计算使用 **/
     public static final BigInteger CURRENCY_UNIT = new BigInteger("10000000000000");

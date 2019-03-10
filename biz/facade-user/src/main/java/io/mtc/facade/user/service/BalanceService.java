@@ -65,7 +65,7 @@ public class BalanceService implements MsgHandler {
         // 初始化未完成
         if (!ethRedisUtil.monitorUserHostWalletInitFinish()) {
             log.info("开始初始化需要监控的托管账户钱包地址");
-            // 将所有用户的托管账户的钱包地址都加在监控中
+            // 将所有用户的托管账户的钱包地址都加在监控中（这里只初始化了ETH币系的）
             userWalletRepository.findAllByCurrencyType(1).forEach(it -> {
                 ethRedisUtil.monitorUserHostWallet(it.getWalletAddress(), it.getUser().getId());
             });
