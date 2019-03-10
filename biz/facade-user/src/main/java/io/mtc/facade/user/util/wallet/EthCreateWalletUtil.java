@@ -29,6 +29,10 @@ public class EthCreateWalletUtil {
         return new CreateWalletResultBean(encryptPrivateKey, address);
     }
 
+    public static String decryptPrivateKey(String secret, String userId){
+        return AesCBC.getInstance().simpleDecrypt(secret, AesCBC.makeKey(userId + ETH_WALLET_PWD + 1));
+    }
+
     public static void main(String[] args) throws Exception {
         User user = new User();
         user.setId(1L);

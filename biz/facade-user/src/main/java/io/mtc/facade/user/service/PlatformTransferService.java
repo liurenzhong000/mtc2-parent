@@ -28,12 +28,16 @@ public class PlatformTransferService {
         if (platformTransfer == null || platformTransfer.getStatus().equals(PlatformTransferStatus.AFFIRM)){
             return;
         }
-        // 提现成功
+        // 操作成功
         if (transInfo.getStatus() == EthTransObj.Status.SUCCESS.ordinal()) {
             platformTransfer.setStatus(PlatformTransferStatus.AFFIRM);
         } else if (transInfo.getStatus() == EthTransObj.Status.FAIL.ordinal()) {
             platformTransfer.setStatus(PlatformTransferStatus.FAIL);
         }
         platformTransferRepository.save(platformTransfer);
+    }
+
+    public void completeUserToMain(EthTransObj transInfo) {
+        completeFeeToUser(transInfo);
     }
 }

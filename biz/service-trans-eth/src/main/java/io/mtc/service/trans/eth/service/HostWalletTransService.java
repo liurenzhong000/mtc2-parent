@@ -44,8 +44,9 @@ public class HostWalletTransService {
         }
 
         //如果是站内转入手续费的业务（不属于充值）
-        if (record.getTxType().equals(EthTransObj.TxType.FEE_TO.ordinal())) {
-            log.info("如果是站内转入手续费的业务（不属于充值） return");
+        if (record.getTxType().equals(EthTransObj.TxType.FEE.ordinal())
+                || record.getTxType().equals(EthTransObj.TxType.TO_MAIN.ordinal())){
+            log.info("站内转入手续费 / 平台汇总（不属于充值）- txType={} - return", record.getTxType());
             return;
         }
 

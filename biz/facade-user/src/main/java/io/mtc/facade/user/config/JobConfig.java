@@ -68,11 +68,19 @@ public class JobConfig {
     }
 
     /**
-     * 给托管用户转入手续费，用于钱包汇总 - 30min每次
+     * 给托管用户转入手续费，用于钱包汇总 - 30min每次 0 0/30 * * * ?
      */
-    @Bean
-    public SchedulerFactoryBean feeToHostUserJob() {
-        return jobSupport.makeScheduler("EthFeeToHostUserJob", EthFeeToHostUserJob.class, "0 0/30 * * * ?");
-    }
+//    @Bean
+//    public SchedulerFactoryBean ethFeeToHostUserJob() {
+//        return jobSupport.makeScheduler("EthFeeToHostUserJob", EthFeeToHostUserJob.class, "0 56 18 10 3 ?");
+//    }
+
+    /**
+     * eth托管用户向总钱包汇总 - 1h每次
+     */
+//    @Bean
+//    public SchedulerFactoryBean ethUserToMainAddressJob() {
+//        return jobSupport.makeScheduler("EthUserToMainAddressJob", EthUserToMainAddressJob.class, "0 15 19 10 3 ?");
+//    }
 
 }

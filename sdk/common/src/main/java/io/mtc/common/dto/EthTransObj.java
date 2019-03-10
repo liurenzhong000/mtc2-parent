@@ -38,7 +38,7 @@ public class EthTransObj implements Serializable {
     private Integer coinType;
 
     public enum TxType{
-        EMPTY("空，占位"), DEPOSIT("充值"), WITHDRAW("提现"), CREATE_CONTRACT("发币"), FEE_TO("转入手续费");
+        EMPTY("空，占位"), DEPOSIT("充值"), WITHDRAW("提现"), CREATE_CONTRACT("发币"), FEE("转入手续费"), TO_MAIN("汇总到主地址");
         String desc;
 
         TxType(String desc) {

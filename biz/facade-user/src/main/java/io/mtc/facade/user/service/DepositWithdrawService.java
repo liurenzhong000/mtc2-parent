@@ -68,7 +68,9 @@ public class DepositWithdrawService {
             String currencyAddress = bill.getBalance().getCurrencyAddress();
             Integer balanceDecimals = redisUtil.get(RedisKeys.DECIMALS_TOKEN(currencyAddress), Integer.class);
             if (balanceDecimals == null) {
+                log.info("############ balanceDecimals ##############");
                 balanceDecimals = serviceEndpointEth.getBalanceDecimals(currencyAddress);
+                log.info("############ balanceDecimals end ##############:{}", balanceDecimals);
             }
             income = CommonUtil.balanceCorrect(income, balanceDecimals);
             // ############ 余额修正 ##############

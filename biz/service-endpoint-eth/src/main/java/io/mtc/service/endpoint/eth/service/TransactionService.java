@@ -137,15 +137,16 @@ public class TransactionService implements MsgHandler {
      * 打包失败的时候，通知其他业务进行业务失败的处理
      */
     private void transFailure(Integer txType, Long txId) {
-            // 平台业务交易
-            EthTransObj request = new EthTransObj();
-            request.setTxType(txType);
-            request.setTxId(txId);
-            request.setStatus(EthTransObj.Status.FAIL.ordinal());
-            producer.send(io.mtc.common.mq.aliyun.Constants.Topic.MTC_BIZ_TRANS,
-                    io.mtc.common.mq.aliyun.Constants.Tag.ETH_BIZ_TRANS_COMPLETE,
-                    request,
-                    io.mtc.common.mq.aliyun.Constants.Tag.ETH_BIZ_TRANS_COMPLETE.name() + request.getTxId());
+        log.error("打包失败，txType={}，txId={}", txType, txId);
+        // 平台业务交易
+        EthTransObj request = new EthTransObj();
+        request.setTxType(txType);
+        request.setTxId(txId);
+        request.setStatus(EthTransObj.Status.FAIL.ordinal());
+        producer.send(io.mtc.common.mq.aliyun.Constants.Topic.MTC_BIZ_TRANS,
+                io.mtc.common.mq.aliyun.Constants.Tag.ETH_BIZ_TRANS_COMPLETE,
+                request,
+                io.mtc.common.mq.aliyun.Constants.Tag.ETH_BIZ_TRANS_COMPLETE.name() + request.getTxId());
     }
 
 }

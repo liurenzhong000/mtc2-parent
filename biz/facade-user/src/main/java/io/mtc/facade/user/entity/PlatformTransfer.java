@@ -44,7 +44,7 @@ public class PlatformTransfer extends BaseEntity {
     private BigInteger qty;
 
     @Column(columnDefinition = "varchar(200) COMMENT '交易hash'", nullable = false, unique = true)
-    private String txId;
+    private String txHash;
 
     @Column(columnDefinition = "decimal(30,0) COMMENT '交易费(wei) '")
     private BigInteger txFee;

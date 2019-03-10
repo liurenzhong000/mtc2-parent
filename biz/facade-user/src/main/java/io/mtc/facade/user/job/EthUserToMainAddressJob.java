@@ -1,5 +1,11 @@
 package io.mtc.facade.user.job;
 
+/**
+ * @Auther: hyp
+ * @Date: 2019/3/10 11:34
+ * @Description: eth汇总任务
+ */
+
 import io.mtc.common.quartz.support.JobSupport;
 import io.mtc.facade.user.service.FundService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,21 +20,20 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
  * @Description: 给本地托管用户钱包地址转入ETH手续费
  */
 @Slf4j
-public class EthFeeToHostUserJob extends QuartzJobBean {
+public class EthUserToMainAddressJob extends QuartzJobBean {
 
-    // future ：判断用户的注册时间，交易量，转入手续费的时候，可以适量多一点
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        log.info("#################execute FeeToHostUserJob job##################");
+        log.info("#################execute EthUserToMainAddressJob job##################");
         ApplicationContext applicationContext = JobSupport.getContext(jobExecutionContext);
         if (applicationContext == null) {
             return;
         }
         if ("prod".equals(applicationContext.getEnvironment().getActiveProfiles()[0])) {
             FundService fundService = applicationContext.getBean(FundService.class);
-            fundService.ethFeeToHostUser();
+            fundService.ethUserToMainAddress();
         }
-        log.info("#################execute FeeToHostUserJob job end##################");
+        log.info("#################execute EthUserToMainAddressJob job end##################");
     }
 
 }
