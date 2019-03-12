@@ -16,14 +16,18 @@ public class Constants {
 
     // prod，test
     @Setter
-    private static String env = "prod";
-    private static final String DEV_ONSAddr = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
+    private static String env;
+    private static final String DEV_ONSADDR = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
     private static final String PROD_ONSADDR = "http://ap-southeastaddr-internal.aliyun.com:8080/rocketmq/nsaddr4client-internal";
     private static final String TEST_ONSADDR = "http://MQ_INST_1064822407388817_BaYMB4VE.mq-internet-access.mq-internet.aliyuncs.com:80";
 
+    public static String getEnv(){
+        return env;
+    }
+
     public static String getONSAddr() {
         if ("dev".equals(env)) {
-            return DEV_ONSAddr;
+            return DEV_ONSADDR;
         } else if ("test".equals(env)) {
             return TEST_ONSADDR;
         } else {

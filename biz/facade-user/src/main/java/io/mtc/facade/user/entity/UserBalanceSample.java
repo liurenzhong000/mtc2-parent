@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
@@ -26,16 +27,23 @@ public class UserBalanceSample extends BaseEntity {
     public UserBalanceSample() {
     }
 
-    public UserBalanceSample(BigInteger balance, BigInteger freezingAmount, UserBalance userBalance) {
+    public UserBalanceSample(BigDecimal balance, BigDecimal freezingAmount, BigDecimal freezingDividendAmount,
+                             BigDecimal dividendAmount, UserBalance userBalance) {
         this.balance = balance;
         this.freezingAmount = freezingAmount;
+        this.dividendAmount = dividendAmount;
+        this.freezingDividendAmount = freezingDividendAmount;
+        this.userId = userBalance.getUserId();
+        this.currencyAddress = userBalance.getCurrencyAddress();
+        this.currencyType = userBalance.getCurrencyType();
         this.userBalance = userBalance;
     }
 
-    public UserBalanceSample(Long id, BigInteger balance, BigInteger freezingAmount, Long userId, Long userBalanceId) {
+    public UserBalanceSample(Long id, BigDecimal balance, BigDecimal freezingAmount, BigDecimal dividendAmount, Long userId, Long userBalanceId) {
         this.id = id;
         this.balance = balance;
         this.freezingAmount = freezingAmount;
+        this.dividendAmount = dividendAmount;
         this.userId = userId;
         this.userBalanceId = userBalanceId;
     }
@@ -46,19 +54,32 @@ public class UserBalanceSample extends BaseEntity {
     @Column(columnDefinition = "datetime COMMENT '钱包抽样时间'", nullable = false)
     private Date createTime = new Date();
 
-    @Column(columnDefinition = "decimal(30,0) COMMENT '余额(wei)'")
-    private BigInteger balance = BigInteger.ZERO;
+    @Column(columnDefinition = "decimal(18,4) COMMENT '余额'")
+    private BigDecimal balance = BigDecimal.ZERO;
 
-    @Column(columnDefinition = "decimal(30,0) COMMENT '冻结金额(wei)'")
-    private BigInteger freezingAmount = BigInteger.ZERO;
+    @Column(columnDefinition = "decimal(18,4) COMMENT '冻结金额'")
+    private BigDecimal freezingAmount = BigDecimal.ZERO;
+
+    @Column(columnDefinition = "decimal(18,4) COMMENT '可获得分红的冻结数'")
+    private BigDecimal freezingDividendAmount = BigDecimal.ZERO;
+
+    @Column(columnDefinition = "decimal(18,4) COMMENT '用于分红的个数 = 余额 - 冻结金额 + 可获得分红的冻结数'")
+    private BigDecimal dividendAmount = BigDecimal.ZERO;
+
+    @Column(columnDefinition = "bigint COMMENT '关联托管用户id'")
+    private Long userId;
+
+    @Column(columnDefinition = "int COMMENT '代币基链类型 基链类型 1:eth, 2:bch, 3:eos，4:btc'")
+    private Integer currencyType = 1;
+
+    @Column(columnDefinition = "varchar(100) COMMENT '代币地址'", nullable = false)
+    private String currencyAddress;
 
     @JSONField(serialize = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_balance_id", columnDefinition = "bigint COMMENT '关联托管账户余额'")
     private UserBalance userBalance;
 
-    @Transient
-    private Long userId;
     @Transient
     private Long userBalanceId;
 

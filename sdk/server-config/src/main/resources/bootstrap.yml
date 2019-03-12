@@ -27,7 +27,7 @@ eureka:
 spring:
   profiles: dev
 server:
-  port: 8889
+  port: 8888
 eureka:
   client:
     service-url:

@@ -215,6 +215,12 @@ public class RedisKeys {
         return DECIMALS_TOKEN_PREFIX + tokenAddress;
     }
 
+    //  用户20:00时的余额记录，用来决定dividendAmount的值 dividend_sample_log：+userId
+    private static final String DIVIDEND_SAMPLE_LOG_KEY = "dividend_sample_log:";
+    public static String DIVIDEND_SAMPLE_LOG(Long userId) {
+        return DIVIDEND_SAMPLE_LOG_KEY + userId;
+    }
+
     /*####################################### 行情 ##################################### */
     public static final String QUOTATION_MARKET = "QUOTATION_MARKET";
     public static final String QUOTATION_SYMBOL = "QUOTATION_SYMBOL";

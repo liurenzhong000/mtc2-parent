@@ -52,7 +52,7 @@ public class JobConfig {
 
 
     /**
-     * 每小时刷新用户BHB,持有金额
+     * 每小时刷新用户BHB,持有金额 0 0 * * * ?
      */
     @Bean
     public SchedulerFactoryBean userBalanceSampleJob() {
@@ -60,11 +60,11 @@ public class JobConfig {
     }
 
     /**
-     * 每天计算用户BHB分成
+     * 每天计算用户ZCD分成 0 0 0 * * ?
      */
     @Bean
     public SchedulerFactoryBean dividendJob() {
-        return jobSupport.makeScheduler("DividendJob", DividendJob.class, "0 0 0 * * ?");
+        return jobSupport.makeScheduler("DividendJob", DividendJob.class, "0 43 18 12 3 ?");
     }
 
     /**

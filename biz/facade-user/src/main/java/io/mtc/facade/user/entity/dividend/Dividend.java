@@ -1,9 +1,9 @@
 package io.mtc.facade.user.entity.dividend;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 public interface Dividend {
 
-    BigDecimal getPrice();
+    List<DividendData> getPrice(List<DividendData> dividendDataList);
 
 }

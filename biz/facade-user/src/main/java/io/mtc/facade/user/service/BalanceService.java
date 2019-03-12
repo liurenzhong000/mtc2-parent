@@ -19,6 +19,7 @@ import io.mtc.facade.user.repository.BillRepository;
 import io.mtc.facade.user.repository.UserBalanceRepository;
 import io.mtc.facade.user.repository.UserRepository;
 import io.mtc.facade.user.repository.UserWalletRepository;
+import io.mtc.facade.user.util.EnvUtil;
 import io.mtc.facade.user.util.wallet.BtcCreateWalletUtil;
 import io.mtc.facade.user.util.wallet.EthCreateWalletUtil;
 import lombok.extern.slf4j.Slf4j;

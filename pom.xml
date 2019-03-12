@@ -53,7 +53,7 @@
         <aliyun.oss>2.8.3</aliyun.oss>
         <aliyun.sms>1.1.0</aliyun.sms>
         <aliyun.mail>3.3.1</aliyun.mail>
-        <aliyun.mq>1.7.8.Final</aliyun.mq>
+        <aliyun.mq>1.8.0.Final</aliyun.mq>
     </properties>
 
     <parent>

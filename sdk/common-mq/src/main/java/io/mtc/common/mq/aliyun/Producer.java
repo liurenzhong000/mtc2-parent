@@ -27,6 +27,27 @@ public class Producer {
      * @param tag 枚举，主要提供producerId（控制台创建的 Producer ID）
      */
     public Producer(Constants.Tag tag) {
+        String env = Constants.getEnv();
+        if (env.equals("prod")) {
+            getProdProducer(tag);
+        } else {
+            getTestProducer(tag);
+        }
+    }
+
+    private void getTestProducer(Constants.Tag tag) {
+        Properties properties = new Properties();
+        properties.put(PropertyKeyConst.GROUP_ID, tag.getGroupId());
+        properties.put(PropertyKeyConst.AccessKey, Constants.AccessKey);
+        properties.put(PropertyKeyConst.SecretKey, Constants.SecretKey);
+        //设置发送超时时间，单位毫秒
+        properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, "3000");
+        properties.put(PropertyKeyConst.NAMESRV_ADDR, Constants.getONSAddr());
+        producer = ONSFactory.createProducer(properties);
+        producer.start();
+    }
+
+    private void getProdProducer(Constants.Tag tag) {
         Properties properties = new Properties();
         properties.put(PropertyKeyConst.ProducerId, tag.getProducerId());
         properties.put(PropertyKeyConst.AccessKey, Constants.AccessKey);

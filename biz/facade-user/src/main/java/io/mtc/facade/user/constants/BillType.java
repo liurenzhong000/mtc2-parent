@@ -19,6 +19,7 @@ public enum BillType {
     ,TRANSFER_PAY(100, "云矿账户支付")
     ,TRANSFER_WITHDRAW(101, "云矿账户提现")
     ,TRANSFER_INCOME(102, "云矿商家收款")
+    ,DIVIDEND(201, "分红")
     ;
 
     private final Integer key;
