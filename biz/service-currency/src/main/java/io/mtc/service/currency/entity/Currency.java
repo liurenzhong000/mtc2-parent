@@ -40,7 +40,7 @@ public class Currency extends BaseEntity {
     @Column(columnDefinition = "varchar(100) COMMENT '提现手续费'", nullable = false)
     private String fee;
 
-    @Column(columnDefinition = "varchar(100) COMMENT '超过多少要进行汇总'", nullable = false)
+    @Column(columnDefinition = "varchar(100) COMMENT '超过多少要进行汇总'")
     private String outQtyToMainAddress;
 
     @Column(columnDefinition = "int COMMENT '来源类型 1:本地，2:block.cc，3:交易所'")
@@ -49,7 +49,7 @@ public class Currency extends BaseEntity {
     @Column(columnDefinition = "varchar(100) COMMENT '来源Key'")
     private String sourceSystemId;
 
-    @Column(columnDefinition = "int COMMENT '基链类型 1:eth, 2:bch, 3:eos，4:btc'")
+    @Column(columnDefinition = "int COMMENT '基链类型 1:eth, 2:bch, 3:eos，4:btc，5:usdt'")
     private Integer baseType = 1;
 
     @Column(columnDefinition = "bit COMMENT '是否默认显示'")

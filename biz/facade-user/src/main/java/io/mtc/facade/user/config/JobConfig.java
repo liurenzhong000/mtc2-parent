@@ -64,7 +64,7 @@ public class JobConfig {
      */
     @Bean
     public SchedulerFactoryBean dividendJob() {
-        return jobSupport.makeScheduler("DividendJob", DividendJob.class, "0 43 18 12 3 ?");
+        return jobSupport.makeScheduler("DividendJob", DividendJob.class, "0 0 0 * * ?");
     }
 
     /**

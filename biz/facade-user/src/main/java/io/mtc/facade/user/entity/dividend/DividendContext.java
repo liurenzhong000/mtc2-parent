@@ -146,7 +146,7 @@ public class DividendContext {
      */
     public UserBalance getUSDTBalanceByUserId(Long userId) {
         User user = userRepository.findById(userId).get();
-        return userBalanceRepository.findByUserAndCurrencyAddressAndCurrencyType(user, "USDT", 4);
+        return userBalanceRepository.findByUserAndCurrencyAddressAndCurrencyType(user, "USDT", 5);
 //        if (userUSDTBalances == null) return null;
 //        for (UserBalance item : userUSDTBalances) {
 //            if (item.getUserId().compareTo(userId) == 0) return item;
@@ -197,7 +197,7 @@ public class DividendContext {
                 userUSDTBalance = new UserBalance();
                 userUSDTBalance.setBalance(dividendUSDT);
                 userUSDTBalance.setCurrencyAddress("USDT");
-                userUSDTBalance.setCurrencyType(4);
+                userUSDTBalance.setCurrencyType(5);
                 userUSDTBalance.setUser(dividendUser.getUser());
                 userUSDTBalance.setWalletAddress("Deprecated");
             } else {
@@ -209,7 +209,7 @@ public class DividendContext {
         }
     }
 
-    /**
+     /**
      * 保存分红日志和分红记录
      * @param dividendUser
      * @param dividendDataList
