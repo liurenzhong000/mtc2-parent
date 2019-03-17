@@ -35,7 +35,9 @@ public class TxController {
     public RequestResult withdraw(@PathVariable BitcoinTypeEnum bitcoinType, String targetAddress, Long billId, String amount) throws Exception {
         log.info("收到提现请求，bill:{}, targetAddress:{}, amount:{}, type:{}", billId, targetAddress, amount, bitcoinType.name());
         if (bitcoinType == BitcoinTypeEnum.BTC) {
-            return txService.btcWithdraw(bitcoinType, targetAddress, Coin.parseCoin(amount), billId);
+            return txService.btcWithdraw(targetAddress, Coin.parseCoin(amount), billId);
+        } else if (bitcoinType == BitcoinTypeEnum.USDT) {
+            return txService.usdtWithdraw(targetAddress, Coin.parseCoin(amount), billId);
         } else {
             return null;
         }

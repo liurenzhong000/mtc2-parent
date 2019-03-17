@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @Entity
 public class Currency extends BaseEntity {
 
-    @Column(columnDefinition = "varchar(100) COMMENT '地址'", nullable = false, unique = true)
+    @Column(columnDefinition = "varchar(100) COMMENT 'eth代币地址，或btc币种的propertyId'", nullable = false, unique = true)
     private String address;
 
     @Column(columnDefinition = "varchar(100) COMMENT '名称'", nullable = false)

@@ -48,6 +48,11 @@ public class Constants {
     /** 比特币托管账户提现手续费 */
     public static final String BTC_WITHDRAW_FEE = "0.0001";
 
+    /**
+     * USDT 在currency里的currencyAddress
+     */
+    public static final String USDT_CURRENCY_ADDRESS = "31";
+
     public static final String DEV_PHONE_HYP = "18296799192";
 
 }

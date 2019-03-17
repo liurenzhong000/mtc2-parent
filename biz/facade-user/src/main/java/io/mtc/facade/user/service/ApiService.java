@@ -1,10 +1,20 @@
 package io.mtc.facade.user.service;
 
+import io.mtc.common.constants.MTCError;
 import io.mtc.common.data.model.PagingModel;
+import io.mtc.common.dto.EthTransObj;
 import io.mtc.common.util.CommonUtil;
+import io.mtc.common.util.ResultUtil;
 import io.mtc.common.util.StringUtil;
+import io.mtc.facade.user.constants.BillStatus;
+import io.mtc.facade.user.entity.Bill;
+import io.mtc.facade.user.repository.BillRepository;
+import jdk.nashorn.internal.runtime.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -19,10 +29,17 @@ import java.util.Map;
  * 2018/8/6
  */
 @Service
+@Transactional
 public class ApiService {
 
     @Resource
     private JdbcTemplate jdbcTemplate;
+
+    @Resource
+    private BillRepository billRepository;
+
+    @Autowired
+    private DepositWithdrawService depositWithdrawService;
 
     public String selectBill(Long uid, String currencyAddress, Integer type, Integer status, String pageModelStr) {
         PagingModel pageModel;
@@ -53,6 +70,27 @@ public class ApiService {
         result.put("timestamp", new Date().getTime());
         result.put("result", data);
         return CommonUtil.toJson(result);
+    }
+
+    public String updateBillStatus(Long id, Integer status){
+        if (status != BillStatus.AUDIT_FAILURE.getKey() && status != BillStatus.PENDING.getKey()) {
+            return ResultUtil.error(MTCError.PARAMETER_INVALID);
+        }
+        Bill bill = billRepository.findById(id).orElse(null);
+        if (bill == null) return ResultUtil.error(MTCError.PARAMETER_INVALID);
+        if (bill.getStatus() == BillStatus.WAIT_AUDIT) {
+            bill.setStatus(BillStatus.getByKey(status));
+        } else {
+            return ResultUtil.error(MTCError.PARAMETER_INVALID);
+        }
+        billRepository.save(bill);
+        if (status == BillStatus.AUDIT_FAILURE.getKey()) {
+            EthTransObj transInfo = new EthTransObj();
+            transInfo.setTxId(bill.getId());
+            transInfo.setStatus(2);
+            depositWithdrawService.completeWithdraw(transInfo);
+        }
+        return ResultUtil.success();
     }
 
     private Long getCount(Long uid, String currencyAddress, Integer type, Integer status) {

@@ -1,4 +1,5 @@
 package io.mtc.facade.user.service;
+import io.mtc.common.dto.CurrencyBean;
 import io.mtc.facade.user.constants.PlatformTransferStatus;
 import java.util.Date;
 import io.mtc.facade.user.constants.PlatformTransferType;
@@ -21,7 +22,6 @@ import io.mtc.common.redis.constants.RedisKeys;
 import io.mtc.common.redis.util.RedisUtil;
 import io.mtc.common.util.*;
 import io.mtc.common.web3j.util.MeshTransactionData;
-import io.mtc.facade.user.bean.CurrencyBean;
 import io.mtc.facade.user.constants.BillStatus;
 import io.mtc.facade.user.constants.BillType;
 import io.mtc.facade.user.entity.*;
@@ -68,7 +68,7 @@ public class FundService implements MsgHandler {
     @Resource
     private UserRepository userRepository;
 
-    @Resource
+    @Resource(name = "ethTransPendingProducer")
     private Producer producer;
 
     @Resource
@@ -340,10 +340,12 @@ public class FundService implements MsgHandler {
     private BigInteger getWithDrawFeeOfCurrency(String currencyAddress, Integer currencyType) {
         if (currencyType == 1) {
 //            return getEthWithdrawFee(currencyAddress);
-            return getEthWithdrawFeeFixation(currencyAddress);
+            return getWithdrawFeeFixation(currencyAddress);
         // 比特币
         } else if (currencyType == 4) {
             return CommonUtil.btc2wei(io.mtc.common.constants.Constants.BTC_WITHDRAW_FEE);
+        } else if (currencyType == 5) {//usdt
+            return getWithdrawFeeFixation(io.mtc.common.constants.Constants.USDT_CURRENCY_ADDRESS);
         } else {
             return BigInteger.ZERO;
         }
@@ -364,7 +366,7 @@ public class FundService implements MsgHandler {
     }
 
     //根据后台的设置来计算需要的手续费
-    private BigInteger getEthWithdrawFeeFixation(String currencyAddress) {
+    private BigInteger getWithdrawFeeFixation(String currencyAddress) {
         BigInteger fee = redisUtil.get(RedisKeys.WITHDRAW_FEE(currencyAddress), BigInteger.class);
         if (fee == null) {
             fee = serviceCurrency.getWithdrawFee(currencyAddress);
@@ -414,7 +416,7 @@ public class FundService implements MsgHandler {
         Bill bill = new Bill();
         bill.setOutcome(amount.add(fee));
         bill.setOutComeFee(fee);
-        bill.setStatus(BillStatus.PENDING);
+        bill.setStatus(BillStatus.WAIT_AUDIT);
         bill.setType(BillType.WITHDRAW);
         bill.setCurrencyType(currencyType);
         // 提现地址
@@ -643,22 +645,89 @@ public class FundService implements MsgHandler {
         if (bill == null) {
             return;
         }
-        log.info("准备打包提现： {}", CommonUtil.toJson(bill));
-        BigInteger withdrawAmount = bill.getOutcome().subtract(bill.getOutComeFee());
-        RequestResult result = facadeBitcoin.withdraw(BitcoinTypeEnum.BTC, bill.getRelatedAddress(), bill.getId(),
-                CommonUtil.wei2btc(withdrawAmount).toPlainString());
-        log.info("打包提现成功： {}", CommonUtil.toJson(result));
-        // 成功
-        if (result.getIsSuccess()) {
-            bill.setTxHash(result.getAdditionInfo().toString());
+        // 获取锁失败则直接返回
+        if (!redisUtil.distributeLock(RedisKeys.BTC_PENDING_WITHDRAW_PROCESS, 20)) {
+            return;
+        }
+        try {
+            log.info("准备发起提现： {}", CommonUtil.toJson(bill));
+            BigInteger withdrawAmount = bill.getOutcome().subtract(bill.getOutComeFee());
+            RequestResult result = facadeBitcoin.withdraw(BitcoinTypeEnum.BTC, bill.getRelatedAddress(), bill.getId(),
+                    CommonUtil.wei2btc(withdrawAmount).toPlainString());
+            log.info("调用facadeBitcoin申请提现BTC成功： {}", CommonUtil.toJson(result));
+            // 成功
+            if (result.getIsSuccess()) {
+                bill.setTxHash(result.getAdditionInfo().toString());
 
-            EthTransObj transInfo = new EthTransObj();
-            transInfo.setTxId(bill.getId());
-            transInfo.setStatus(1);
-            depositWithdrawService.completeWithdraw(transInfo);
-            log.info("完成账单： {}", bill.getId());
+                EthTransObj transInfo = new EthTransObj();
+                transInfo.setTxId(bill.getId());
+                transInfo.setStatus(1);
+                depositWithdrawService.completeWithdraw(transInfo);
+                log.info("完成账单-提现BTC成功： {}", bill.getId());
 
-            billRepository.save(bill);
+                billRepository.save(bill);
+            }else {
+                EthTransObj transInfo = new EthTransObj();
+                transInfo.setTxId(bill.getId());
+                transInfo.setStatus(2);
+                depositWithdrawService.completeWithdraw(transInfo);
+                log.info("完成账单-提现BTC失败： {}", bill.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            redisUtil.delete(RedisKeys.PENDING_WITHDRAW_PROCESS);
+        }
+
+    }
+
+    /**
+     * 等待打包的提现交易消费（只是USDT）
+     */
+    public void usdtPendingTransConsume() {
+        Bill bill = billRepository.findTopByStatusAndTypeAndCurrencyTypeOrderByIdAsc(
+                BillStatus.PENDING, BillType.WITHDRAW, 5);
+        if (bill == null || StringUtils.isNotBlank(bill.getTxHash())) {//有hash也不行
+            return;
+        }
+
+        // 获取锁失败则直接返回
+        if (!redisUtil.distributeLock(RedisKeys.USDT_PENDING_WITHDRAW_PROCESS, 20)) {
+            return;
+        }
+
+        try {
+            log.info("准备发起提现： {}", CommonUtil.toJson(bill));
+            BigInteger withdrawAmount = bill.getOutcome().subtract(bill.getOutComeFee());
+            RequestResult result;
+            try {
+                result = facadeBitcoin.withdraw(BitcoinTypeEnum.USDT, bill.getRelatedAddress(), bill.getId(),
+                        CommonUtil.wei2btc(withdrawAmount).toPlainString());
+            } catch (Exception e) {
+                result = new RequestResult(false, "服务调用请求失败", null);
+            }
+
+            log.info("调用facadeBitcoin申请提现USDT成功： {}", CommonUtil.toJson(result));
+            // 成功
+            if (result.getIsSuccess()) {
+                bill.setTxHash(result.getAdditionInfo().toString());
+                EthTransObj transInfo = new EthTransObj();
+                transInfo.setTxId(bill.getId());
+                transInfo.setStatus(1);
+                depositWithdrawService.completeWithdraw(transInfo);
+                log.info("完成账单-提现USDT成功： {}", bill.getId());
+                billRepository.save(bill);
+            } else {
+                EthTransObj transInfo = new EthTransObj();
+                transInfo.setTxId(bill.getId());
+                transInfo.setStatus(2);
+                depositWithdrawService.completeWithdraw(transInfo);
+                log.info("完成账单-提现USDT失败： {}", bill.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            redisUtil.delete(RedisKeys.PENDING_WITHDRAW_PROCESS);
         }
     }
 

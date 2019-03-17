@@ -64,6 +64,12 @@ public class HostUserController {
         return facadeUser.bills(uid, currencyAddress, type, status, CommonUtil.toJson(pageModel));
     }
 
+    @PreAuthorize("hasAuthority('bill:update')")
+    @PutMapping("/billDetail")
+    public String billDetail(Long id, Integer status) {
+        return facadeUser.billDetail(id, status);
+    }
+
     /**
      * 查询云矿交易信息
      */

@@ -7,6 +7,7 @@ import io.mtc.common.dto.EthTransObj;
 import io.mtc.common.mq.aliyun.MsgHandler;
 import io.mtc.common.redis.constants.RedisKeys;
 import io.mtc.common.redis.util.EthRedisUtil;
+import io.mtc.common.redis.util.UsdtRedisUtil;
 import io.mtc.common.util.CommonUtil;
 import io.mtc.facade.user.bean.CreateWalletResultBean;
 import io.mtc.facade.user.constants.BillStatus;
@@ -15,6 +16,7 @@ import io.mtc.facade.user.entity.Bill;
 import io.mtc.facade.user.entity.User;
 import io.mtc.facade.user.entity.UserBalance;
 import io.mtc.facade.user.entity.UserWallet;
+import io.mtc.facade.user.feign.FacadeBitcoin;
 import io.mtc.facade.user.repository.BillRepository;
 import io.mtc.facade.user.repository.UserBalanceRepository;
 import io.mtc.facade.user.repository.UserRepository;
@@ -28,7 +30,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -59,19 +63,36 @@ public class BalanceService implements MsgHandler {
     @Resource
     private EthRedisUtil ethRedisUtil;
 
+    @Resource
+    private UsdtRedisUtil usdtRedisUtil;
+
+    @Resource
+    private FacadeBitcoin facadeBitcoin;
+
     /**
      * 初始化要监控的钱包地址
      */
     public void initMonitorAddress() {
-        // 初始化未完成
+        // 初始化ETH托管用户地址
         if (!ethRedisUtil.monitorUserHostWalletInitFinish()) {
-            log.info("开始初始化需要监控的托管账户钱包地址");
+            log.info("开始初始化需要监控的ETH托管账户钱包地址");
             // 将所有用户的托管账户的钱包地址都加在监控中（这里只初始化了ETH币系的）
             userWalletRepository.findAllByCurrencyType(1).forEach(it -> {
                 ethRedisUtil.monitorUserHostWallet(it.getWalletAddress(), it.getUser().getId());
             });
             ethRedisUtil.finishInitMonitorUserHostWallet();
-            log.info(">>> 初始化需要监控的托管账户钱包地址 【完成】");
+            log.info(">>> 初始化需要监控的ETH托管账户钱包地址 【完成】");
+        }
+
+        // 初始化USDT托管用户地址
+        if (!usdtRedisUtil.monitorUserHostWalletInitFinish()) {
+            log.info("开始初始化需要监控的USDT托管账户钱包地址");
+            // 将所有用户的托管账户的钱包地址都加在监控中（这里只初始化了ETH币系的）
+            userWalletRepository.findAllByCurrencyType(5).forEach(it -> {
+                usdtRedisUtil.monitorUserHostWallet(it.getWalletAddress(), it.getUser().getId());
+            });
+            usdtRedisUtil.finishInitMonitorUserHostWallet();
+            log.info(">>> 初始化需要监控的USDT托管账户钱包地址 【完成】");
         }
     }
 
@@ -100,7 +121,13 @@ public class BalanceService implements MsgHandler {
                 if (currencyType == 1) {
                     result = EthCreateWalletUtil.createWallet(user);
                 } else if (currencyType == 4) {
-                    result = BtcCreateWalletUtil.getAddressByUserId(user.getId());
+                    HashMap map = (HashMap) facadeBitcoin.getNewAddress(BitcoinTypeEnum.BTC);
+                    String newAddress = (String) map.get("result");
+                    result = new CreateWalletResultBean("", newAddress);
+                } else if (currencyType == 5){
+                    HashMap map = (HashMap) facadeBitcoin.getNewAddress(BitcoinTypeEnum.USDT);
+                    String newAddress = (String) map.get("result");
+                    result = new CreateWalletResultBean("", newAddress);
                 } else {
                     // TODO 其他方式
                     return null;
@@ -120,6 +147,8 @@ public class BalanceService implements MsgHandler {
                 // 以太坊
                 if (currencyType == 1) {
                     ethRedisUtil.monitorUserHostWallet(result.getAddress(), user.getId());
+                } else if (currencyType == 5) {
+                    usdtRedisUtil.monitorUserHostWallet(result.getAddress(), user.getId());
                 }
             } finally {
                 ethRedisUtil.delete(ethCreateWalletLock);
@@ -184,6 +213,25 @@ public class BalanceService implements MsgHandler {
         hostTransInfo.setIncome(CommonUtil.btc2wei(amountStr));
 
         completeWalletDeposit(hostTransInfo, 4);
+    }
+
+    /**
+     * USDT的钱包地址有充值到账
+     * @param txHash 交易hash
+     * @param walletAddress 比特币的钱包地址
+     * @param fromAddresses 转入地址
+     * @param amount 金额
+     */
+    public void usdtWalletDesposit(String txHash, String walletAddress, String fromAddresses, BigDecimal amount) {
+        EthHostWalletAddressTrans hostTransInfo = new EthHostWalletAddressTrans();
+        hostTransInfo.setNonce(BigInteger.ZERO);
+        hostTransInfo.setTxHash(txHash);
+        hostTransInfo.setTokenAddress("USDT");
+        hostTransInfo.setWalletAddress(walletAddress);
+        hostTransInfo.setFromAddress(fromAddresses);
+        String amountStr = amount.toPlainString();
+        hostTransInfo.setIncome(CommonUtil.btc2wei(amountStr));
+        completeWalletDeposit(hostTransInfo, 5);
     }
 
     /**

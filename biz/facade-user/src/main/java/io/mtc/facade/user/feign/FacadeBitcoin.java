@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigInteger;
 
 /**
- * 以太坊交易提供者
+ * Omni交易提供者
  *
  * @author Chinhin
  * 2018/6/21
@@ -26,4 +26,7 @@ public interface FacadeBitcoin {
                            @RequestParam("billId") Long billId,
                            @RequestParam("amount") String amount);
 
+
+    @GetMapping("/{bitcoinType}/newAddress")
+    Object getNewAddress(@PathVariable("bitcoinType") BitcoinTypeEnum bitcoinType);
 }

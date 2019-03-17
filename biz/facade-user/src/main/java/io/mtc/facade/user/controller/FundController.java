@@ -154,23 +154,24 @@ public class FundController {
     @Transactional
     public Object withdraw(@RequestHeader Long uid, String currencyAddress, @RequestParam(defaultValue = "1") Integer currencyType, String walletAddress,
                            String amount, String fundPassword, Boolean isValidByPhone, String validCode) {
-        return ResultUtil.error("提现暂未开放");
-//        // 非正式环境不能提现
-//        if (!applicationContext.getEnvironment().getActiveProfiles()[0].equals("prod")) {
-//            return ResultUtil.error("非正式环境不能提现");
-//        }
-//        return fundService.withdraw(uid, currencyAddress, currencyType, walletAddress, amount, fundPassword, isValidByPhone, validCode);
+//        return ResultUtil.error("提现暂未开放");
+        // 非正式环境不能提现
+        if (!applicationContext.getEnvironment().getActiveProfiles()[0].equals("prod")) {
+            return ResultUtil.error("非正式环境不能提现");
+        }
+        return fundService.withdraw(uid, currencyAddress, currencyType, walletAddress, amount, fundPassword, isValidByPhone, validCode);
     }
 
     @PostMapping("/withdrawAIP")
     @Transactional
     public Object withdrawAIP(@RequestParam(defaultValue = "1") Integer currencyType, Long uid, String walletAddress,
                            String amount, String fundPassword) {
-         //非正式环境不能提现
-        if (!applicationContext.getEnvironment().getActiveProfiles()[0].equals("prod")) {
-           return ResultUtil.error("非正式环境不能提现");
-        }
-        return fundService.withdrawAIP(currencyType, uid, walletAddress, amount, fundPassword);
+        return ResultUtil.error("提现暂未开放");
+//         //非正式环境不能提现
+//        if (!applicationContext.getEnvironment().getActiveProfiles()[0].equals("prod")) {
+//           return ResultUtil.error("非正式环境不能提现");
+//        }
+//        return fundService.withdrawAIP(currencyType, uid, walletAddress, amount, fundPassword);
     }
 
     @ApiOperation(value="获取单个代币的托管账户的余额", tags = {"需要token"})

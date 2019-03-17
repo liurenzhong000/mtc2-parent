@@ -7,5 +7,5 @@ package io.mtc.common.constants;
  * 2018/12/10
  */
 public enum BitcoinTypeEnum {
-    BTC, BCH
+    BTC, BCH, USDT
 }

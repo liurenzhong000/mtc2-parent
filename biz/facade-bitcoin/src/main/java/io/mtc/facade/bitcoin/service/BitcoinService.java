@@ -15,6 +15,7 @@ import io.mtc.facade.bitcoin.data.entity.BchTxRemark;
 import io.mtc.facade.bitcoin.data.entity.BtcTxRemark;
 import io.mtc.facade.bitcoin.data.repository.BchTxRemarkRepository;
 import io.mtc.facade.bitcoin.data.repository.BtcTxRemarkRepository;
+import io.mtc.facade.bitcoin.util.FacadeBtcRpcUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -263,4 +264,24 @@ public class BitcoinService {
         }
     }
 
+    public Object getNewAddress(BitcoinTypeEnum bitcoinType) {
+        if (bitcoinType == BitcoinTypeEnum.BCH) {
+            return ResultUtil.errorObj(MTCError.PARAMETER_INVALID);
+        }
+        String address = FacadeBtcRpcUtil.getNewAddress();
+        return ResultUtil.successObj(address);
+    }
+
+    /**
+     * 发送USDT交易
+     */
+    public String sendUsdtTransaction(String fromAddress, String toAddress, int propertyId, String amount, String feeAddress) {
+        String txId = FacadeBtcRpcUtil.omniFundedSend(fromAddress, toAddress, propertyId, amount, feeAddress);
+        return txId;
+    }
+
+    public String sendToAddress(String toAddress, String amount) {
+        String txId = FacadeBtcRpcUtil.sendToAddress(toAddress, new BigDecimal(amount));
+        return txId;
+    }
 }

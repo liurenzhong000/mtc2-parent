@@ -1,6 +1,9 @@
 package io.mtc.facade.user.entity.dividend;
+
+import io.mtc.common.constants.Constants;
 import io.mtc.facade.user.constants.BillType;
 import io.mtc.facade.user.constants.BillStatus;
+
 import java.util.Date;
 
 import com.alibaba.fastjson.JSON;
@@ -91,8 +94,7 @@ public class DividendContext {
 //    public BigDecimal getZCDCNYPrice() {
 //        return DividendConstant.ZCD_PRICE;
 //    }
-
-    public BigDecimal getZCDUSDT(){
+    public BigDecimal getZCDUSDT() {
         return DividendConstant.ZCD_USDT;
     }
 
@@ -146,7 +148,7 @@ public class DividendContext {
      */
     public UserBalance getUSDTBalanceByUserId(Long userId) {
         User user = userRepository.findById(userId).get();
-        return userBalanceRepository.findByUserAndCurrencyAddressAndCurrencyType(user, "USDT", 5);
+        return userBalanceRepository.findByUserAndCurrencyAddressAndCurrencyType(user, Constants.USDT_CURRENCY_ADDRESS, 5);
 //        if (userUSDTBalances == null) return null;
 //        for (UserBalance item : userUSDTBalances) {
 //            if (item.getUserId().compareTo(userId) == 0) return item;
@@ -167,7 +169,6 @@ public class DividendContext {
 //        }
 //        return findData;
 //    }
-
     public UserBalanceSampleAvg getBalanceSampleAvgByUserId(Long userId) {
         for (UserBalanceSampleAvg item : userBalanceSampleAvgs) {
             if (item.getUserId().compareTo(userId) == 0)
@@ -196,7 +197,7 @@ public class DividendContext {
             if (userUSDTBalance == null) {
                 userUSDTBalance = new UserBalance();
                 userUSDTBalance.setBalance(dividendUSDT);
-                userUSDTBalance.setCurrencyAddress("USDT");
+                userUSDTBalance.setCurrencyAddress(Constants.USDT_CURRENCY_ADDRESS);
                 userUSDTBalance.setCurrencyType(5);
                 userUSDTBalance.setUser(dividendUser.getUser());
                 userUSDTBalance.setWalletAddress("Deprecated");
@@ -209,13 +210,14 @@ public class DividendContext {
         }
     }
 
-     /**
+    /**
      * 保存分红日志和分红记录
+     *
      * @param dividendUser
      * @param dividendDataList
      * @param userUSDTBalance
      */
-    private void filterToSaveLog(DividendUser dividendUser, List<DividendData> dividendDataList, UserBalance userUSDTBalance, BigDecimal allDividend){
+    private void filterToSaveLog(DividendUser dividendUser, List<DividendData> dividendDataList, UserBalance userUSDTBalance, BigDecimal allDividend) {
         //保存总记录
         Long userId = dividendUser.getUser().getId();
         DividendData myDividendData = DividendData.listByLevel(dividendDataList, 0).get(0);
@@ -245,7 +247,7 @@ public class DividendContext {
                 .append("静态分红比例：").append(DividendConstant.STATIC_DIVIDEND_RATE)
                 .append("一级分红比例：").append(DividendConstant.DYNAMIC_DIVIDEND_LEVEL_1_RATE)
                 .append("二级分红比例：").append(DividendConstant.DYNAMIC_DIVIDEND_LEVEL_2_RATE).toString();
-        dividendDataList.forEach(item ->{
+        dividendDataList.forEach(item -> {
             DividendDetail dividendDetail = new DividendDetail();
             dividendDetail.setFromUserId(item.getUserId());
             dividendDetail.setToUserId(userId);
@@ -268,9 +270,10 @@ public class DividendContext {
         bill.setCurrentBalance(userUSDTBalance.getBalance());
         bill.setStatus(BillStatus.SUCCESS);
         bill.setType(BillType.DIVIDEND);
-        bill.setCurrencyType(4);
+        bill.setCurrencyType(5);
         bill.setRelativeId(dividendLog.getId());
         bill.setBalance(userUSDTBalance);
+        bill.setNote("ZCD分红");
         billRepository.save(bill);
     }
 

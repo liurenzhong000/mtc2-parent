@@ -1,9 +1,7 @@
 package io.mtc.facade.backend.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 托管用户的消费
@@ -36,6 +34,10 @@ public interface FacadeUser {
                  @RequestParam("type") Integer type,
                  @RequestParam("status") Integer status,
                  @RequestParam("pageModelStr") String pageModelStr);
+
+    @PutMapping("/api/bill/{id}")
+    String billDetail(@RequestParam("id") @PathVariable("id") Long id,
+                 @RequestParam("status") Integer status);
 
     @GetMapping("/loanApi/config")
     String getLoanConfig();

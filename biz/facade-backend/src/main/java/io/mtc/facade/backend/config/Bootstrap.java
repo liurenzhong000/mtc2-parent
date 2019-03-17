@@ -91,6 +91,7 @@ public class Bootstrap {
             permissions.add(new AdminPermission("托管用户-更新推荐人", "user:updatePromoter"));
 
             permissions.add(new AdminPermission("账单-查询", "bill:select"));
+            permissions.add(new AdminPermission("账单-审核", "bill:update"));
 
             permissions.add(new AdminPermission("借款配置-更新", "loanConfig:update"));
             permissions.add(new AdminPermission("借款记录-查看", "loanRecord:select"));

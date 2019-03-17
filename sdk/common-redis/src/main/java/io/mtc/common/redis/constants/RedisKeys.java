@@ -90,6 +90,20 @@ public class RedisKeys {
     }
     private static final String ETH_CREATE_WALLET_LOCK_PREFIX = "ETH_CREATE_WALLET_LOCK:";
 
+    //  USDT钱包
+    /**
+     * omni-usdt已经扫描到的高度
+     */
+    public static final String USDT_SCANED_BLOCKE_COUNT = "USDT_SCANED_BLOCKE_COUNT";
+    /**
+     * USDT托管账户用户自己的钱包地址
+     */
+    public static final String USDT_HOST_WALLET_ADDRESS = "USDT_HOST_WALLET_ADDRESS";
+    /**
+     * USDT托管账户用户需要监控的钱包地址的初始化是否完成
+     */
+    public static final String USDT_HOST_WALLET_ADDRESS_INIT_FINISH = "USDT_HOST_WALLET_ADDRESS_INIT_FINISH";
+
     /**
      * 平台用户钱包地址
      */
@@ -169,6 +183,8 @@ public class RedisKeys {
         return WITHDRAW_FEE_PREFIX + currencyAddress;
     }
     public static final String PENDING_WITHDRAW_PROCESS = "PENDING_WITHDRAW_PROCESS";
+    public static final String USDT_PENDING_WITHDRAW_PROCESS = "USDT_PENDING_WITHDRAW_PROCESS";
+    public static final String BTC_PENDING_WITHDRAW_PROCESS = "BTC_PENDING_WITHDRAW_PROCESS";
     public static final String PENDING_CREATE_CONTRACT_PROCESS = "PENDING_CREATE_CONTRACT_PROCESS";
 
     public static final String ENABLE_RED_ENVELOPE_CURRENCY = "ENABLE_ENVELOPE_CURRENCY";

@@ -20,11 +20,11 @@ public class BtcPendingWithdrawJob extends QuartzJobBean {
         if (applicationContext == null) {
             return;
         }
-//        if ("prod".equals(applicationContext.getEnvironment().getActiveProfiles()[0])
-//                || "test".equals(applicationContext.getEnvironment().getActiveProfiles()[0])) {
+        if ("prod".equals(applicationContext.getEnvironment().getActiveProfiles()[0])
+                || "test".equals(applicationContext.getEnvironment().getActiveProfiles()[0])) {
             FundService fundService = applicationContext.getBean(FundService.class);
             fundService.btcPendingTransConsume();
-//        }
+        }
     }
 
 }

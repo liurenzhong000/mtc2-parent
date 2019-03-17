@@ -9,6 +9,7 @@ import io.mtc.common.util.CommonUtil;
 import io.mtc.common.util.DateUtil;
 import io.mtc.common.util.ResultUtil;
 import io.mtc.common.util.StringUtil;
+import io.mtc.facade.user.constants.BillStatus;
 import io.mtc.facade.user.constants.BillTypeConverter;
 import io.mtc.facade.user.entity.BalanceUpdateRecord;
 import io.mtc.facade.user.entity.Bill;
@@ -185,6 +186,11 @@ public class ApiController {
     @GetMapping("/bill/{id}")
     public String billDetail(@PathVariable("id") Long id) {
         return CommonUtil.toJson(billRepository.findById(id).orElse(null));
+    }
+
+    @PutMapping("/bill/{id}")
+    public String billDetail(@PathVariable("id") Long id, Integer status) {
+        return apiService.updateBillStatus(id, status);
     }
 
     @Transactional

@@ -1,4 +1,4 @@
-package io.mtc.facade.user.bean;
+package io.mtc.common.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +13,10 @@ import java.math.BigDecimal;
 @Setter
 @Getter
 public class CurrencyBean {
-    /**地址*/
+
+    private Long id;
+
+    /**地址 代币地址，或btc币种的propertyId*/
     private String address;
 
     /**名称*/
@@ -43,7 +46,7 @@ public class CurrencyBean {
     /**来源Key*/
     private String sourceSystemId;
 
-    /**基链类型 1:eth, 2:bch, 3:eos，4:btc*/
+    /**基链类型 1:eth, 2:bch, 3:eos，4:btc 5:usdt*/
     private Integer baseType = 1;
 
     /**是否默认显示*/

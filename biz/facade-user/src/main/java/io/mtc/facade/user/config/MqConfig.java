@@ -5,6 +5,7 @@ import io.mtc.common.mq.aliyun.Consumer;
 import io.mtc.common.mq.aliyun.Producer;
 import io.mtc.facade.user.service.BalanceService;
 import io.mtc.facade.user.service.FundService;
+import io.mtc.facade.user.service.OmniRechargeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +30,10 @@ public class MqConfig {
     @Resource
     private BalanceService balanceService;
 
-    @Bean
+    @Resource
+    private OmniRechargeService omniRechargeService;
+
+    @Bean(name = "ethTransPendingProducer")
     public Producer ethTransPendingProducer() {
         Constants.setEnv(applicationContext.getEnvironment().getActiveProfiles()[0]);
         return new Producer(Constants.Tag.ETH_BIZ_TRANS_PENDING);
@@ -49,6 +53,12 @@ public class MqConfig {
         } else {
             return new Consumer(Constants.Topic.MTC_BIZ_TRANS, Constants.Tag.ETH_BIZ_HOST_WALLET_TRANS, balanceService);
         }
+    }
+
+    @Bean
+    public Consumer omniHostWalletTrans() {
+        Constants.setEnv(applicationContext.getEnvironment().getActiveProfiles()[0]);
+        return new Consumer(Constants.Topic.MTC_BIZ_TRANS, Constants.Tag.OMNI_BIZ_HOST_WALLET_TRANS, omniRechargeService);
     }
 
 }
