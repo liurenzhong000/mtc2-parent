@@ -43,6 +43,9 @@ public class Currency extends BaseEntity {
     @Column(columnDefinition = "varchar(100) COMMENT '超过多少要进行汇总'")
     private String outQtyToMainAddress;
 
+    @Column(columnDefinition = "varchar(100) COMMENT '超过多少要转入冷钱包'")
+    private String qtyToColdAddress;
+
     @Column(columnDefinition = "int COMMENT '来源类型 1:本地，2:block.cc，3:交易所'")
     private Integer sourceType;
 

@@ -1,6 +1,6 @@
-const baseUrl = "https://app.zcdcoin.club";
+// const baseUrl = "https://app.zcdcoin.club";
 // const baseUrl = "http://47.74.210.94:8180";
-// const baseUrl = "http://localhost:8080";
+const baseUrl = "http://localhost:8080";
 const webRoot = baseUrl + "/backend";
 const userWebRoot = baseUrl + "/user";
 

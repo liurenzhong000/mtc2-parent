@@ -1,11 +1,9 @@
 package io.mtc.server.zuul.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StreamUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
