@@ -82,6 +82,6 @@ public class FacadeBtcRpcUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(omniBalance("18HUP17GjV5jo5ZF6F9fxHxmGhtfB1q9YQ", 31));
+        System.out.println(omniFundedSend("18HUP17GjV5jo5ZF6F9fxHxmGhtfB1q9YQ","1CV4wEqzayGwJpismesqHcQzwrTF5aHA1m", 31,"1","18HUP17GjV5jo5ZF6F9fxHxmGhtfB1q9YQ"));
     }
 }

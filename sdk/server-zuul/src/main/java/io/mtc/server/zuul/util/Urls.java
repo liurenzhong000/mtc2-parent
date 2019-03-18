@@ -18,6 +18,7 @@ import java.nio.charset.Charset;
  */
 public class Urls {
 
+    //,"/user/fund/userWalletAddress**"
     // 不需要token验证的请求
     public static final String[] UNCHECK_TOKEN_URL = new String[]{
             "/user/user/sendCode*"
@@ -39,7 +40,7 @@ public class Urls {
             ,"/user/webjars*"
             ,"/user/fund/withdrawAIP*"
             ,"/user/eos/eosApi/**"
-            ,"/user/fund/userWalletAddress**"
+
             ,"/user/btcApi**"
     };
 

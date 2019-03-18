@@ -93,16 +93,15 @@ public class RechargeService {
                 setScanedBlockCount(newlyBlockCount - 1);
                 scanedBlockCount = newlyBlockCount - 1;
             }
-            if (newlyBlockCount <= scanedBlockCount) {
+            if (newlyBlockCount < scanedBlockCount + 1) {
                 log.info("已经扫描到达最新的区块高度，scanedBlockCount={}", scanedBlockCount);
                 return;
             }
-            log.info("开始USDT充值扫描，区块高度：{}", scanedBlockCount);
-            List<String> hashList = FacadeBtcRpcUtil.omniListBlockTransactions(scanedBlockCount);
+            log.info("开始USDT充值扫描，区块高度：{}", scanedBlockCount + 1);
+            List<String> hashList = FacadeBtcRpcUtil.omniListBlockTransactions(scanedBlockCount + 1);
             for (String txId : hashList) {
                 OmniTransactionBean transaction = FacadeBtcRpcUtil.omniGetTransaction(txId);
                 if (!transaction.isValid()) {
-                    log.info("不是有效数据");
                     continue;
                 }
                 int propertyId = transaction.getPropertyid();
@@ -113,6 +112,7 @@ public class RechargeService {
                         .filter(e -> e.getBaseType().equals(5))
                         .findFirst();
                 if (!first.isPresent()) {
+                    log.info("获取usdt的currencyBean失败");
                     continue;
                 }
 

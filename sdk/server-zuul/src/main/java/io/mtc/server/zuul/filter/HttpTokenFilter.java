@@ -73,7 +73,6 @@ public class HttpTokenFilter extends ZuulFilter {
             TokenCheckUtil.errorHandler(currentContext, "dont push token in header", HttpStatus.METHOD_NOT_ALLOWED);
             return null;
         }
-
         // 没有验证token的，且没有加密的请求直接放行
         if (Urls.isUncheckUri(requestURI) && !Urls.isPwdUri(requestURI)) {
             return null;
@@ -90,7 +89,7 @@ public class HttpTokenFilter extends ZuulFilter {
         } else {
             encryParamStr = Urls.getBody(request);
         }
-
+        log.info("3333={}",encryParamStr);
         String requestParamStr = Constants.EMPTY;
         if (StringUtil.isNotEmpty(encryParamStr)) {
             String requestTime = request.getHeader("requestTime");
@@ -103,7 +102,6 @@ public class HttpTokenFilter extends ZuulFilter {
                 return null;
             }
         }
-
         // 非token的请求要验证token
         if (!Urls.isPwdUri(requestURI)) {
             if (StringUtil.isEmpty(requestParamStr)) {

@@ -32,7 +32,7 @@ public class Recharge extends BaseEntity {
     @Column(columnDefinition = "varchar(100) COMMENT '转入地址'")
     private String toAddress;
 
-    @Column(columnDefinition = "decimal(18,18) COMMENT '充值数量 '")
+    @Column(columnDefinition = "decimal(20,18) COMMENT '充值数量 '")
     private BigDecimal qty;
 
     @Column(columnDefinition = "varchar(100) COMMENT '交易hash'")

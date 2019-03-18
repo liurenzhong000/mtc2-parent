@@ -2,6 +2,7 @@ package io.mtc.facade.user.service;
 
 import com.aliyun.openservices.ons.api.Action;
 import io.mtc.common.constants.BitcoinTypeEnum;
+import io.mtc.common.constants.Constants;
 import io.mtc.common.dto.EthHostWalletAddressTrans;
 import io.mtc.common.dto.EthTransObj;
 import io.mtc.common.mq.aliyun.MsgHandler;
@@ -226,7 +227,7 @@ public class BalanceService implements MsgHandler {
         EthHostWalletAddressTrans hostTransInfo = new EthHostWalletAddressTrans();
         hostTransInfo.setNonce(BigInteger.ZERO);
         hostTransInfo.setTxHash(txHash);
-        hostTransInfo.setTokenAddress("USDT");
+        hostTransInfo.setTokenAddress(Constants.USDT_CURRENCY_ADDRESS);
         hostTransInfo.setWalletAddress(walletAddress);
         hostTransInfo.setFromAddress(fromAddresses);
         String amountStr = amount.toPlainString();
