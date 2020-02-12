@@ -1,6 +1,7 @@
 package io.mtc.service.endpoint.eth.mongoRepository;
 
 import io.mtc.common.mongo.dto.TransactionRecord;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
@@ -9,6 +10,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @author Chinhin
  * 2018/6/25
  */
-public interface TransactionRepository extends MongoRepository<TransactionRecord, String> {
+public interface TransactionRepository extends MongoRepository<TransactionRecord, String>{
 
 }
